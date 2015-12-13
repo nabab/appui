@@ -43,6 +43,8 @@
       sleep: false,
       /* appui.v.tmp can be used anytime as a temp var */
       tmp: false,
+      /* appui.v.loaders is an array of MD5 of data and url preventing the same call to be made at the same time */
+      loaders: [],
       /* appui.v.params is an array of each element of the path */
       params: [],
       popups: [],
@@ -161,6 +163,7 @@
     },
     /* Functions */
     f: {
+
       defaults: {
         /* Predefined callback functions for appui.f.link function */
         ajaxErrorFunction: function(jqXHR, textStatus, errorThrown) {
@@ -183,7 +186,7 @@
           //appui.f.log(r);
           return true;
         },
-        endLoadingFunction: function(r) {
+        endLoadingFunction: function(end) {
           //appui.f.log(r);
           return true;
         },
@@ -200,6 +203,7 @@
           return true;
         }
       },
+
       /* The History object if history has been loaded */
       history: window.History === undefined ? false : window.History,
 
@@ -264,6 +268,7 @@
         }
         return false;
       },
+
       /* Adds or replace if exists a parameter in the URL, for when using key pairs parameters */
       setParam: function(name, value) {
         if (name && value) {
@@ -282,6 +287,25 @@
           });
         }
         return false;
+      },
+
+      // @return {integer} a random int between min and max
+      randomInt: function(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+      },
+
+      randomString: function(length, chars) {
+        if ( !length ){
+          length = appui.f.randomInt(8, 14);
+        }
+        if ( !chars ){
+          chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        }
+        var result = '';
+        for ( var i = length; i > 0; --i ) {
+          result += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return result;
       },
 
       removeAccents: function(st){
@@ -538,9 +562,32 @@
         }
       },
 
+      uniqString: function(){
+        var st = '';
+        for ( var i = 0; i < arguments.length; i++ ){
+          if ( typeof(arguments[i]) === 'object' ){
+            st += JSON.stringify(arguments[i]);
+          }
+          else if ( typeof(arguments[i]) !== 'string' ){
+            st += arguments[i].toString();
+          }
+          else{
+            st += arguments[i];
+          }
+        }
+        return md5(st);
+      },
+
       /* Posting function (with path rewriting) */
       post: function() {
-        var action, datatype, callback, data, change = false, ele = false, i;
+        var
+          action,
+          datatype,
+          callback,
+          data,
+          change = false,
+          ele = false, i,
+          uniq;
         for (i = 0; i < arguments.length; i++) {
           if ($.isFunction(arguments[i])) {
             callback = arguments[i];
@@ -585,30 +632,12 @@
          }
          */
         if ( change && action ) {
-          appui.f.startLoadingFunction({url:action, data:data});
-          $.ajax({
-            type: "POST",
-            url: action,
-            data: data,
-            success: function(d) {
-              appui.f.endLoadingFunction();
-              appui.f.callback(action, d, callback, false, ele);
-              if (d && d.new_url !== undefined) {
-                appui.f.log("new url");
-                appui.f.setNavigationVars(d.new_url, (d.siteTitle || appui.v.siteTitle), {}, 1);
-              }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-              appui.f.endLoadingFunction();
-              if ( appui.f.ajaxErrorFunction(jqXHR, textStatus, errorThrown) ){
-                var st = '<h3>' + textStatus + '</h3>';
-                if (errorThrown !== undefined) {
-                  st += '<p>' + errorThrown + '</p>';
-                }
-                appui.f.alert(st);
-              }
-            },
-            datatype: datatype
+          uniq = appui.f.uniqString(action, data ? data : {});
+          appui.f.ajax(action, datatype, data, uniq, function(res){
+            appui.f.callback(action, res, callback, false, ele);
+            if ( res && res.new_url !== undefined ) {
+              appui.f.setNavigationVars(res.new_url, (res.siteTitle || appui.v.siteTitle), {}, 1);
+            }
           });
         }
       },
@@ -676,6 +705,46 @@
 
       },
 
+      ajax: function(url, datatype, data, uniq, success, failure){
+        if ( $.inArray(uniq, appui.v.loaders) === -1 ){
+          appui.v.loaders.push(uniq);
+          appui.f.startLoadingFunction(url, uniq, data);
+          $.ajax({
+            type: "POST",
+            url: url,
+            datatype: datatype,
+            data: data,
+            success: function(res) {
+              if ($.isFunction(success) ){
+                success(res);
+              }
+              appui.f.endLoadingFunction(url, uniq, data, res);
+              var idx = $.inArray(uniq, appui.v.loaders);
+              if ( idx > -1 ){
+                appui.v.loaders.splice(idx, 1);
+              }
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              if ($.isFunction(failure) ){
+                failure(res);
+              }
+              appui.f.endLoadingFunction(url, uniq, data, errorThrown);
+              var idx = $.inArray(uniq, appui.v.loaders);
+              if ( idx > -1 ){
+                appui.v.loaders.splice(idx, 1);
+              }
+              if (appui.f.ajaxErrorFunction()) {
+                var st = '<h3>' + textStatus + '</h3>';
+                if (errorThrown !== undefined) {
+                  st += '<p>' + errorThrown + '</p>';
+                }
+                appui.f.alert(st);
+              }
+            }
+          });
+        }
+      },
+
       /*
        Operates a link, making use of History if available, and triggering special functions
        The possible arguments are:
@@ -696,7 +765,8 @@
       link: function() {
         var cfg = appui.f.treat_vars(arguments),
             ok = 1,
-            i;
+          i,
+          uniq;
         /* If we can't find a correct link we load the current URL */
         if ( !cfg || (cfg.url === undefined) ) {
           return appui.f.link(window.location.href);
@@ -730,46 +800,29 @@
             }
           }
           if (ok) {
-            appui.f.startLoadingFunction({url: cfg.url, data: cfg.obj});
             if (ok !== 1 && (typeof ok === 'string') ){
               cfg.url = ok;
             }
-            $.ajax({
-              type: "POST",
-              url: cfg.url,
-              datatype: cfg.datatype || "json",
-              data: cfg.obj,
-              success: function(res) {
-                if (res && res.new_url) {
-                  res.old_path = cfg.url;
-                  cfg.url = res.new_url;
-                }
-                else if ( res.url && cfg.url !== res.url ){
-                  res.old_path = cfg.url;
-                }
-                appui.f.endLoadingFunction(res);
-                // If there's nothing in the result, just an empty object, the callback stops here and the URL is not changed
-                if ( (typeof(res) === 'object') && (Object.keys(res).length === 0) ){
-                  return;
-                }
-                if ( appui.f.callback(cfg.url, res, cfg.fn, cfg.fn2, cfg.ele) &&
-                  res &&
-                  res.noNav === undefined) {
+            uniq = appui.f.uniqString(cfg.url, cfg.obj ? cfg.obj : {});
+            appui.f.ajax(cfg.url, cfg.datatype || "json", cfg.obj, uniq, function(res) {
+              if (res && res.new_url) {
+                res.old_path = cfg.url;
+                cfg.url = res.new_url;
+              }
+              else if ( res.url && cfg.url !== res.url ){
+                res.old_path = cfg.url;
+              }
+              // If there's nothing in the result, just an empty object, the callback stops here and the URL is not changed
+              if ( (typeof(res) === 'object') && (Object.keys(res).length === 0) ){
+                return;
+              }
+              if ( appui.f.callback(cfg.url, res, cfg.fn, cfg.fn2, cfg.ele) &&
+                res &&
+                res.noNav === undefined) {
 
-                  // This solution is not very clean (we can't shorten a URL)
-                  if ( appui.v.path.indexOf(cfg.url) !== 0 ){
-                    appui.f.setNavigationVars(cfg.url, (res.siteTitle || appui.v.siteTitle));
-                  }
-                }
-              },
-              error: function(xhr, textStatus, errorThrown) {
-                appui.f.endLoadingFunction();
-                if (appui.f.ajaxErrorFunction()) {
-                  var st = '<h3>' + textStatus + '</h3>';
-                  if (errorThrown !== undefined) {
-                    st += '<p>' + errorThrown + '</p>';
-                  }
-                  appui.f.alert(st);
+                // This solution is not very clean (we can't shorten a URL)
+                if ( appui.v.path.indexOf(cfg.url) !== 0 ){
+                  appui.f.setNavigationVars(cfg.url, (res.siteTitle || appui.v.siteTitle));
                 }
               }
             });
@@ -1038,6 +1091,9 @@
         var $form = $(form),
           url = $form.attr("action") || appui.v.path,
           data;
+        appui.v.logging = 1;
+        appui.f.log($form);
+        $form.attr("action", null);
         if ( (typeof(url) === 'string') && (url.indexOf("http") !== 0 || url.indexOf(window.document.location.hostname) !== -1) && !$form.is("[target]") ){
           if ( e ){
             e.preventDefault();
@@ -1045,6 +1101,13 @@
           data = appui.f.formdata(form);
           if ( data ){
             $form.data("appuiSubmit", 1);
+            var script = $form.data("script");
+            if ($.isFunction(script) ){
+              $form.data("script", function(){
+                $form.attr("action", url);
+                $form.data("script")();
+              })
+            }
             if ($form.data("script")) {
               appui.f.post(url, data, $form.data("script"));
             }
