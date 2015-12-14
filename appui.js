@@ -1091,21 +1091,19 @@
         var $form = $(form),
           url = $form.attr("action") || appui.v.path,
           data;
-        appui.v.logging = 1;
-        appui.f.log($form);
-        $form.attr("action", null);
         if ( (typeof(url) === 'string') && (url.indexOf("http") !== 0 || url.indexOf(window.document.location.hostname) !== -1) && !$form.is("[target]") ){
           if ( e ){
             e.preventDefault();
           }
           data = appui.f.formdata(form);
           if ( data ){
+            $form.attr("action", null);
             $form.data("appuiSubmit", 1);
             var script = $form.data("script");
             if ($.isFunction(script) ){
               $form.data("script", function(){
                 $form.attr("action", url);
-                $form.data("script")();
+                script();
               })
             }
             if ($form.data("script")) {
@@ -1319,9 +1317,9 @@
             }
           }
           if ( ok ){
-            appui.f.log(rules);
+            //appui.f.log(rules);
             for (var cx = 0; cx < rules.length; cx++) {
-              appui.f.log(rules[cx].selectorText);
+              //appui.f.log(rules[cx].selectorText);
               if ( new RegExp("(^|\\s)" + appui.f.escapeRegExp(f) + "(\\{|\\s)", "g").test(rules[cx].selectorText) ){
                 return true;
               }
