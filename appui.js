@@ -1101,9 +1101,9 @@
             $form.data("appuiSubmit", 1);
             var script = $form.data("script");
             if ($.isFunction(script) ){
-              $form.data("script", function(){
+              $form.data("script", function(d){
                 $form.attr("action", url);
-                script();
+                script(d);
               })
             }
             if ($form.data("script")) {
