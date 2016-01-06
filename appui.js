@@ -809,7 +809,7 @@
                 res.old_path = cfg.url;
                 cfg.url = res.new_url;
               }
-              else if ( res.url && cfg.url !== res.url ){
+              else if ( res.url && (cfg.url !== res.url) ){
                 res.old_path = cfg.url;
               }
               // If there's nothing in the result, just an empty object, the callback stops here and the URL is not changed
