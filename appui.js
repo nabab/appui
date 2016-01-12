@@ -428,7 +428,7 @@
           width = msg.length > 250 ? 600 : 250;
         }
         if (!height) {
-          height = msg.length > 250 ? 400 : (msg.length > 100 ? 200 : 100);
+          height = false;
         }
         $d = $('<div class="appui-logger">').appendTo($(window.document.body));
         if ( callbackOpen ){
@@ -457,14 +457,13 @@
           }
         };
         if ( window.kendo !== undefined ) {
-          $d.html(msg).kendoWindow({
+          var cfg = {
             modal: options.modal !== undefined ? options.modal : true,
             title: title || appui.l.errorText,
             maxWidth: options.maxWidth !== undefined ? options.maxWidth : appui.v.width - 50,
             maxHeight: options.maxHeight !== undefined ? options.maxHeight : appui.v.height - 50,
             width: width,
             pinned: options.pinned !== undefined ? options.pinned : true,
-            height: height,
             resizable: options.resizable !== undefined ? options.resizable : true,
             actions: [
               "Maximize",
@@ -479,13 +478,20 @@
                 this.center();
               }
             },
+            refresh: function() {
+              this.center();
+            },
             deactivate: function() {
               this.destroy();
             },
             close: function() {
               onClose($d);
             }
-          });
+          };
+          if ( height ){
+            cfg.height = height;
+          }
+          $d.html(msg).kendoWindow(cfg);
         }
         else {
           $d.append(msg)
