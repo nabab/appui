@@ -17,39 +17,27 @@
   /*global appui */
   var $window = $(window);
   window.appui = {
-    v: {
-      defaults: {
-        siteTitle: $("head title").text(),
-        /* This variable should be set to true in debugging mode only */
-        logging: false,
-        /* Address of the CDN (where this file should be hosted) */
-        cdn: 'http://cdn.app-ui.com/',
-        /* Default language */
-        lang: 'en',
-        ele: $(document.body),
+    opt: {
+      _cat: {}
+    },
+    lng: {
+      _defaults: {
+        /* User-defined languages elements */
+        loading: 'Loading...',
+        choose: 'Choose',
+        error: 'Error',
+        server_response: 'Server response',
+        reload: 'Reload',
+        errorText: 'Something went wrong'
+      }
+    },
+    var: {
+      _defaults: {
+        /* Usable datatypes through jQuery Ajax function */
+        datatypes: ['xml', 'html', 'script', 'json', 'jsonp', 'text'],
+        /* The default value used by the function shorten */
+        shortenLen: 30,
       },
-      host: window.location.protocol + '//' + window.location.hostname,
-      url: window.location.href,
-      old_path: null,
-      /* True when non asynchronous Ajax loads */
-      loading: false,
-      /* Window width */
-      width: $window.width(),
-      /* Window height */
-      height: $window.height(),
-      /* Element currently focused (jQuery object) */
-      focused: false,
-      /* Sleep mode (tab or window unfocused */
-      sleep: false,
-      /* appui.v.tmp can be used anytime as a temp var */
-      tmp: false,
-      /* appui.v.loaders is an array of MD5 of data and url preventing the same call to be made at the same time */
-      loaders: [],
-      /* appui.v.params is an array of each element of the path */
-      params: [],
-      popups: [],
-      /* Usable datatypes through jQuery Ajax function */
-      datatypes: ['xml', 'html', 'script', 'json', 'jsonp', 'text'],
       /* Categorizing keyboard map */
       keys: {
         upDown: [33, 34, 35, 36, 38, 40],
@@ -59,8 +47,6 @@
         alt: [20, 16, 17, 18, 144],
         numbers: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105]
       },
-      /* The default value used by the function shorten */
-      shortenLen: 30,
       comparators: [">=", "<=", ">", "<", "="],
       operators: ["+", "-", "/", "*"],
       defaultDiacriticsRemovalMap: [
@@ -150,98 +136,165 @@
         {'base':'z','letters':/[\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763]/g}
       ]
     },
-    l: {
-      defaults: {
-        /* User-defined languages elements */
-        loading: 'Loading...',
-        choose: 'Choose',
-        error: 'Error',
-        server_response: 'Server response',
-        reload: 'Reload',
-        errorText: 'Something went wrong'
-      }
+    env: {
+      _defaults: {
+        siteTitle: $("head title").text(),
+        /* This variable should be set to true in debugging mode only */
+        logging: false,
+        /* Address of the CDN (where this file should be hosted) */
+        cdn: 'http://cdn.app-ui.com/',
+        /* Default language */
+        lang: 'en',
+        ele: $(document.body),
+      },
+      host: window.location.protocol + '//' + window.location.hostname,
+      url: window.location.href,
+      old_path: null,
+      /* True when non asynchronous Ajax loads */
+      loading: false,
+      /* Window width */
+      width: $window.width(),
+      /* Window height */
+      height: $window.height(),
+      /* Element currently focused (jQuery object) */
+      focused: false,
+      /* Last time user has been active */
+      last_focus: new Date(),
+      /* Sleep mode (tab or window unfocused */
+      sleep: false,
+      /* appui.env.loaders is an array of MD5 of data and url preventing the same call to be made at the same time */
+      loaders: [],
+      /* appui.env.params is an array of each element of the path */
+      params: [],
     },
-    /* Functions */
-    f: {
+    app: {
+      popups: [],
+    },
+    events: {},
+    fn: {
+      _defaults: {
+        money: function(m){
+          if ( window.kendo !== undefined ) {
+            return kendo.toString(parseInt(m), "n0");
+          }
+          else{
 
-      defaults: {
-        /* Predefined callback functions for appui.f.link function */
+          }
+        },
+
+        fdate: function(d, wrong_result){
+          var r;
+          if ( (typeof(d) === 'string') && (d.length > 5) && (d.substring(d.length-5, d.length-4) === '.') ){
+            d = Math.floor(d);
+          }
+          if ( (typeof(d) === 'number') && (d > 0) ){
+            if ( d < 10000000000 ){
+              d = d*1000;
+            }
+            r = new Date(d);
+          }
+          else if ( window.kendo !== undefined ) {
+            try {
+              r = kendo.parseDate(d);
+            }
+            catch (err) {
+              r = d;
+            }
+          }
+          else{
+
+          }
+          if ( !r ){
+            return wrong_result ? wrong_result : '';
+          }
+          if ( r.isSame && r.isSame(new Date()) ){
+            r = kendo.toString(r, 'H:mm');
+            if ( r === '0:00' ){
+              r = "Aujourd'hui";
+            }
+            return r;
+          }
+          else{
+            return kendo.toString(r, 'd');
+          }
+        },
+
+        /* Predefined callback functions for appui.fn.link function */
         ajaxErrorFunction: function(jqXHR, textStatus, errorThrown) {
-          //appui.f.log(r);
+          //appui.fn.log(r);
           return true;
         },
         defaultPreLinkFunction: function(r, ele) {
-          //appui.f.log(r);
+          //appui.fn.log(r);
           return true;
         },
         defaultLinkFunction: function(r, ele) {
-          //appui.f.log(r);
+          //appui.fn.log(r);
           return true;
         },
         defaultPostLinkFunction: function(r) {
-          //appui.f.log(r);
+          //appui.fn.log(r);
           return true;
         },
         startLoadingFunction: function(r) {
-          //appui.f.log(r);
+          //appui.fn.log(r);
           return true;
         },
         endLoadingFunction: function(end) {
-          //appui.f.log(r);
+          //appui.fn.log(r);
           return true;
         },
         defaultHistoryFunction: function(url, title, data) {
-          //appui.f.log(r);
+          //appui.fn.log(r);
           return true;
         },
         defaultResizeFunction: function() {
-          //appui.f.log(r);
+          //appui.fn.log(r);
           return true;
         },
         defaultAlertFunction: function() {
-          //appui.f.log(r);
+          //appui.fn.log(r);
           return true;
         }
       },
-
       /* The History object if history has been loaded */
       history: window.History === undefined ? false : window.History,
 
       /* Extracts the URL from the parameters */
       getURL: function() {
-        return appui.v.root + appui.v.params.join("/") + "/";
+        return appui.env.root + appui.env.params.join("/") + "/";
       },
 
       // see http://stackoverflow.com/questions/1144783/replacing-all-occurrences-of-a-string-in-javascript
       replaceAll: function(find, replace, str) {
         if ( str !== undefined ){
-          return str.toString().replace(new RegExp(find, 'g'), replace);
+          return str.toString().replace(new RegExp(appui.fn.escapeRegExp(find), 'g'), replace);
         }
         return false;
       },
 
       remove_quotes: function(st){
-        return appui.f.replaceAll('"', '&quot;', appui.f.replaceAll("'", "&#39;", st));
+        return appui.fn.replaceAll('"', '&quot;', appui.fn.replaceAll("'", "&#39;", st));
       },
 
       remove_nl: function(st){
-        return appui.f.replaceAll("\n", " ", st);
+        return appui.fn.replaceAll("\n", " ", st);
       },
 
       remove_all: function(st){
-        return appui.f.remove_nl(appui.f.remove_quotes(st));
+        return appui.fn.remove_nl(appui.fn.remove_quotes(st));
       },
 
       nl2br: function(st){
-        return appui.f.replaceAll("\n", "<br>", st);
+        return appui.fn.replaceAll("\n", "<br>", st);
       },
 
       br2nl: function(st){
-        return appui.f.replaceAll("<br />", "\n", appui.f.replaceAll("<br/>", "\n", appui.f.replaceAll("<br>", "\n", st)));
+        return appui.fn.replaceAll("<br />", "\n", appui.fn.replaceAll("<br/>", "\n", appui.fn.replaceAll("<br>", "\n", st)));
       },
 
       html2text: function(st){
-        var $test = $('<div/>').html(appui.f.br2nl(st)).appendTo(document.body);
+        var $test = $('<div/>').html(appui.fn.br2nl(st)).appendTo(document.body);
         st = $test.text();
         $test.remove();
         return st;
@@ -252,16 +305,16 @@
         if (!num) {
           num = 1;
         }
-        var i = $.inArray(param, appui.v.params),
-          res = '',
-          a;
+        var i = $.inArray(param, appui.env.params),
+            res = '',
+            a;
         if (i > -1) {
           for ( a = 1; a <= num; a++ ) {
-            if (appui.v.params[i + a]) {
+            if (appui.env.params[i + a]) {
               if (res !== '') {
                 res += '/';
               }
-              res += appui.v.params[i + a];
+              res += appui.env.params[i + a];
             }
           }
           return res;
@@ -273,17 +326,17 @@
       setParam: function(name, value) {
         if (name && value) {
           var toAdd = value.split("/"),
-            i = $.inArray(name, appui.v.params);
+              i = $.inArray(name, appui.env.params);
           if (i > -1) {
             if (toAdd.length > 1) {
-              appui.v.params.splice(i + 1, 1000);
+              appui.env.params.splice(i + 1, 1000);
             }
           }
           else {
             toAdd.unshift(name);
           }
           $.each(toAdd, function(idx, val) {
-            appui.v.params.push(encodeURI(val));
+            appui.env.params.push(encodeURI(val));
           });
         }
         return false;
@@ -296,7 +349,7 @@
 
       randomString: function(length, chars) {
         if ( !length ){
-          length = appui.f.randomInt(8, 14);
+          length = appui.fn.randomInt(8, 14);
         }
         if ( !chars ){
           chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -309,7 +362,7 @@
       },
 
       removeAccents: function(st){
-        var m = appui.v.defaultDiacriticsRemovalMap;
+        var m = appui.var.defaultDiacriticsRemovalMap;
         for(var i=0; i < m.length; i++) {
           st = st.replace(m[i].letters, m[i].base);
         }
@@ -317,7 +370,7 @@
       },
 
       makeURL: function(st){
-        st = appui.f.removeAccents(st).replace(/[^a-zA-Z0-9]/g, '-').replace(/--/g, '').toLowerCase();
+        st = appui.fn.removeAccents(st).replace(/[^a-zA-Z0-9]/g, '-').replace(/--/g, '').toLowerCase();
         if ( st.charAt(st.length - 1) === '-' ){
           st = st.substr(0, st.length - 1);
         }
@@ -336,7 +389,7 @@
       shorten: function(st, len){
         if ( typeof(st).toLowerCase() === 'string' ){
           if ( !len ){
-            len = appui.v.shortenLen;
+            len = appui.var.shortenLen;
           }
           if ( st.length > len ){
             st = st.substr(0, len-1) + '...';
@@ -350,11 +403,11 @@
           return 1;
         }
         if ( (typeof(st) === 'string') &&
-          (st.length > 0) && (
+            (st.length > 0) && (
           (st.indexOf('calc') === 0 ) ||
           (!isNaN(st.substr(0,1))) ) ){
           var el = document.createElement('div'),
-            style = el.style;
+              style = el.style;
           style.width = st;
           return !!style.width.length;
         }
@@ -363,12 +416,12 @@
       },
 
       closeAlert: function() {
-        if (appui.v.popups.length > 0) {
-          if (appui.v.popups[appui.v.popups.length - 1].data("kendoWindow")) {
-            appui.v.popups[appui.v.popups.length - 1].data("kendoWindow").close();
+        if (appui.app.popups.length > 0) {
+          if (appui.app.popups[appui.app.popups.length - 1].data("kendoWindow")) {
+            appui.app.popups[appui.app.popups.length - 1].data("kendoWindow").close();
           }
-          else if (appui.v.popups[appui.v.popups.length - 1].data("dialog")) {
-            appui.v.popups[appui.v.popups.length - 1].dialog("close");
+          else if (appui.app.popups[appui.app.popups.length - 1].data("dialog")) {
+            appui.app.popups[appui.app.popups.length - 1].dialog("close");
           }
         }
       },
@@ -376,24 +429,24 @@
       /* Sends a message in a modal dialog */
       alert: function() {
         var msg,
-          title,
-          width,
-          height,
-          callbackOpen,
-          callbackClose,
-          onOpen,
-          options = {},
-          onClose,
-          has_msg = false,
-          has_width = false,
-          has_callback = false,
-          i, $d, postLoad;
+            title,
+            width,
+            height,
+            callbackOpen,
+            callbackClose,
+            onOpen,
+            options = {},
+            onClose,
+            has_msg = false,
+            has_width = false,
+            has_callback = false,
+            i, $d, postLoad;
         for ( i = 0; i < arguments.length; i++ ) {
           if ( !has_msg ){
             msg = arguments[i];
             has_msg = 1;
           }
-          else if ( appui.f.isDimension(arguments[i]) ){
+          else if ( appui.fn.isDimension(arguments[i]) ){
             if ( has_width ){
               height = arguments[i];
             }
@@ -419,10 +472,10 @@
           }
         }
         if (!msg) {
-          msg = appui.l.errorText;
+          msg = appui.lng.errorText;
         }
         if (!title) {
-          title = appui.l.error;
+          title = appui.lng.error;
         }
         if (!width) {
           width = msg.length > 250 ? 600 : 250;
@@ -438,8 +491,8 @@
           $d.data("appui_callbackClose", callbackClose);
         }
         onOpen = function(ele){
-          appui.v.popups.push(ele);
-          appui.f.defaultAlertFunction(ele);
+          appui.app.popups.push(ele);
+          appui.fn.defaultAlertFunction(ele);
           if ( ele.data("appui_callbackOpen") ){
             ele.data("appui_callbackOpen")(ele);
           }
@@ -451,7 +504,7 @@
           }
         };
         onClose = function(ele){
-          appui.v.popups.pop();
+          appui.app.popups.pop();
           if ( ele.data("appui_callbackClose") ){
             ele.data("appui_callbackClose")(ele);
           }
@@ -459,9 +512,9 @@
         if ( window.kendo !== undefined ) {
           var cfg = {
             modal: options.modal !== undefined ? options.modal : true,
-            title: title || appui.l.errorText,
-            maxWidth: options.maxWidth !== undefined ? options.maxWidth : appui.v.width - 50,
-            maxHeight: options.maxHeight !== undefined ? options.maxHeight : appui.v.height - 50,
+            title: title || appui.lng.errorText,
+            maxWidth: options.maxWidth !== undefined ? options.maxWidth : appui.env.width - 50,
+            maxHeight: options.maxHeight !== undefined ? options.maxHeight : appui.env.height - 50,
             width: width,
             pinned: options.pinned !== undefined ? options.pinned : true,
             resizable: options.resizable !== undefined ? options.resizable : true,
@@ -496,40 +549,40 @@
         else {
           $d.append(msg)
             .dialog({
-              width: Math.round($window.width() * 0.4),
-              resizable: options.resizable !== undefined ? options.resizable : true,
-              stack: false,
-              modal: options.modal !== undefined ? options.modal : true,
-              resize: function() {
-                if ( $.fn.redraw !== undefined ) {
-                  $d.redraw();
-                }
-              },
-              close: function() {
-                onClose($d);
-                $(this).dialog("destroy").remove();
+            width: Math.round($window.width() * 0.4),
+            resizable: options.resizable !== undefined ? options.resizable : true,
+            stack: false,
+            modal: options.modal !== undefined ? options.modal : true,
+            resize: function() {
+              if ( $.fn.redraw !== undefined ) {
+                $d.redraw();
               }
-            });
+            },
+            close: function() {
+              onClose($d);
+              $(this).dialog("destroy").remove();
+            }
+          });
         }
         onOpen($d);
       },
 
-			resize_popup: function(){
-				var w = appui.f.get_popup();
-				if ( w ){
-					if ( window.kendo !== undefined ) {
-						w.data("kendoWindow").setOptions({
-							maxHeight: appui.v.height - 100,
-							minWidth: 850
-						});
-						w.data("kendoWindow").center();
-					}
-				}
-			},
+      resize_popup: function(){
+        var w = appui.fn.get_popup();
+        if ( w ){
+          if ( window.kendo !== undefined ) {
+            w.data("kendoWindow").setOptions({
+              maxHeight: appui.env.height - 100,
+              minWidth: 850
+            });
+            w.data("kendoWindow").center();
+          }
+        }
+      },
 
       get_popup: function(){
-        if ( appui.v.popups.length > 0 ){
-          return appui.v.popups[appui.v.popups.length-1];
+        if ( appui.app.popups.length > 0 ){
+          return appui.app.popups[appui.app.popups.length-1];
         }
         return false;
       },
@@ -586,14 +639,14 @@
 
       /* Posting function (with path rewriting) */
       post: function() {
-        var
-          action,
-          datatype,
-          callback,
-          data,
-          change = false,
-          ele = false, i,
-          uniq;
+        var action,
+            datatype,
+            callback,
+            data,
+            change = false,
+            ele = false,
+            i,
+            uniq;
         for (i = 0; i < arguments.length; i++) {
           if ($.isFunction(arguments[i])) {
             callback = arguments[i];
@@ -605,7 +658,7 @@
           else if (typeof (arguments[i]) === 'object') {
             data = arguments[i];
           }
-          else if ($.inArray(arguments[i], appui.v.datatypes) > -1) {
+          else if ($.inArray(arguments[i], appui.var.datatypes) > -1) {
             datatype = arguments[i];
           }
           else if (typeof (arguments[i]) === 'string') {
@@ -618,31 +671,30 @@
         if ( typeof(data) !== 'object' ) {
           data = {};
         }
-        $.extend(data, {appui: "public"});
         if ( data.appui_data_checker === undefined ) {
           change = 1;
         }
         /*
-         * Automatic check for same field values
-         * Would be better to put it in the form's data (jquery data)
-         else if ( action && data.appui_data_checkers ){
-         for ( var i in data.appui_data_checkers ){
-         if ( (typeof(data[i]) === 'undefined') || (data[i] !== data.appui_data_checkers) ){
-         change = 1;
-         break;
-         }
-         }
-         if ( !change ){
-         appui.f.callback(action, data, callback);
-         }
-         }
-         */
+           * Automatic check for same field values
+           * Would be better to put it in the form's data (jquery data)
+           else if ( action && data.appui_data_checkers ){
+           for ( var i in data.appui_data_checkers ){
+           if ( (typeof(data[i]) === 'undefined') || (data[i] !== data.appui_data_checkers) ){
+           change = 1;
+           break;
+           }
+           }
+           if ( !change ){
+           appui.fn.callback(action, data, callback);
+           }
+           }
+           */
         if ( change && action ) {
-          uniq = appui.f.uniqString(action, data ? data : {});
-          appui.f.ajax(action, datatype, data, uniq, function(res){
-            appui.f.callback(action, res, callback, false, ele);
+          uniq = appui.fn.uniqString(action, data ? data : {});
+          appui.fn.ajax(action, datatype, data, uniq, function(res){
+            appui.fn.callback(action, res, callback, false, ele);
             if ( res && res.new_url !== undefined ) {
-              appui.f.setNavigationVars(res.new_url, (res.siteTitle || appui.v.siteTitle), {}, 1);
+              appui.fn.setNavigationVars(res.new_url, (res.siteTitle || appui.env.siteTitle), {}, 1);
             }
           });
         }
@@ -673,25 +725,25 @@
           }
           else if (t.toLowerCase() === 'string') {
             /* Hash */
-            if (args[i].indexOf('#') === 0 || args[i].indexOf(appui.v.root + '#') === 0) {
+            if (args[i].indexOf('#') === 0 || args[i].indexOf(appui.env.root + '#') === 0) {
               return true;
             }
             /* Ajax datatype */
-            if ($.inArray(args[i], appui.v.datatypes) > -1) {
+            if ($.inArray(args[i], appui.var.datatypes) > -1) {
               cfg.datatype = args[i];
             }
             /* Link */
             else {
               cfg.url = args[i];
-              if (cfg.url.indexOf(appui.v.root) === 0) {
-                cfg.url = cfg.url.substr(appui.v.root.length);
+              if (cfg.url.indexOf(appui.env.root) === 0) {
+                cfg.url = cfg.url.substr(appui.env.root.length);
               }
             }
           }
           /* Event */
           else if ( t.toLowerCase() === 'object' ) {
             if ((args[i].type !== undefined) &&
-              (args[i].target !== undefined)) {
+                (args[i].target !== undefined)) {
               cfg.e = args[i];
             }
             /* HTML Element */
@@ -712,39 +764,58 @@
       },
 
       ajax: function(url, datatype, data, uniq, success, failure){
-        if ( $.inArray(uniq, appui.v.loaders) === -1 ){
-          appui.v.loaders.push(uniq);
-          appui.f.startLoadingFunction(url, uniq, data);
+        if ( $.inArray(uniq, appui.env.loaders) === -1 ){
+          if ( uniq ){
+            appui.env.loaders.push(uniq);
+            appui.fn.startLoadingFunction(url, uniq, data);
+          }
+          if ( typeof(data) !== 'object' ) {
+            data = {};
+          }
+          var empty = true;
+          for ( var n in data ){
+            empty = false;
+            break;
+          }
+          if ( empty ){
+            data = {appui: "public"};
+          }
           $.ajax({
             type: "POST",
             url: url,
+            async: true,
             datatype: datatype,
-            data: data,
+            data: JSON.stringify(data),
+            contentType: 'application/json',
             success: function(res) {
               if ($.isFunction(success) ){
                 success(res);
               }
-              appui.f.endLoadingFunction(url, uniq, data, res);
-              var idx = $.inArray(uniq, appui.v.loaders);
-              if ( idx > -1 ){
-                appui.v.loaders.splice(idx, 1);
+              if ( uniq ) {
+                appui.fn.endLoadingFunction(url, uniq, data, res);
+                var idx = $.inArray(uniq, appui.env.loaders);
+                if (idx > -1) {
+                  appui.env.loaders.splice(idx, 1);
+                }
               }
             },
             error: function(xhr, textStatus, errorThrown) {
+              if ( uniq ) {
+                appui.fn.endLoadingFunction(url, uniq, data, errorThrown);
+                var idx = $.inArray(uniq, appui.env.loaders);
+                if (idx > -1) {
+                  appui.env.loaders.splice(idx, 1);
+                }
+              }
               if ($.isFunction(failure) ){
                 failure(res);
               }
-              appui.f.endLoadingFunction(url, uniq, data, errorThrown);
-              var idx = $.inArray(uniq, appui.v.loaders);
-              if ( idx > -1 ){
-                appui.v.loaders.splice(idx, 1);
-              }
-              if (appui.f.ajaxErrorFunction()) {
+              else if (appui.fn.ajaxErrorFunction()) {
                 var st = '<h3>' + textStatus + '</h3>';
                 if (errorThrown !== undefined) {
                   st += '<p>' + errorThrown + '</p>';
                 }
-                appui.f.alert(st);
+                appui.fn.alert(st);
               }
             }
           });
@@ -752,30 +823,30 @@
       },
 
       /*
-       Operates a link, making use of History if available, and triggering special functions
-       The possible arguments are:
-       - a link or an absolute path
-       - a jQuery element to inject html in
-       - a callback to be called instead of defaultLinkFunction - the argument is the Ajax return
-       - a callback to be called instead of defaultPostLinkFunction - the argument is the url about to be loaded
-       - a callback to be called instead of defaultPreLinkFunction - the argument is the Ajax return
-       It will post and expects an object with the following properties:
-       - prescript: some javascript to execute before the Ajax call is made
-       - script: some script to execute just after the Ajax call
-       - postscript: some script to execute just after the defaultPostLinkFunction function
-       - new_url: the URL to change
-       - siteTitle: The title to put in the title tag
-       - error: an error message
-       - html: an html string to inject
-       */
+         Operates a link, making use of History if available, and triggering special functions
+         The possible arguments are:
+         - a link or an absolute path
+         - a jQuery element to inject html in
+         - a callback to be called instead of defaultLinkFunction - the argument is the Ajax return
+         - a callback to be called instead of defaultPostLinkFunction - the argument is the url about to be loaded
+         - a callback to be called instead of defaultPreLinkFunction - the argument is the Ajax return
+         It will post and expects an object with the following properties:
+         - prescript: some javascript to execute before the Ajax call is made
+         - script: some script to execute just after the Ajax call
+         - postscript: some script to execute just after the defaultPostLinkFunction function
+         - new_url: the URL to change
+         - siteTitle: The title to put in the title tag
+         - error: an error message
+         - html: an html string to inject
+         */
       link: function() {
-        var cfg = appui.f.treat_vars(arguments),
+        var cfg = appui.fn.treat_vars(arguments),
             ok = 1,
-          i,
-          uniq;
+            i,
+            uniq;
         /* If we can't find a correct link we load the current URL */
         if ( !cfg || (cfg.url === undefined) ) {
-          return appui.f.link(window.location.href);
+          return appui.fn.link(window.location.href);
         }
         /* Just executing the javascript if there is */
         if (cfg.url.indexOf('javascript:') === 0) {
@@ -788,18 +859,18 @@
         }
         /* Opens an external page in a new window */
         if ( (cfg.url.indexOf("http") === 0) &&
-          (cfg.url.indexOf(window.document.location.hostname) === -1) && cfg.e) {
+            (cfg.url.indexOf(window.document.location.hostname) === -1) && cfg.e) {
           cfg.e.preventDefault();
           window.open(cfg.url);
         }
         /* The URL is fine so go ahead if something is not already loading */
-        else if ( (cfg.url !== appui.v.params.join("/")) || (cfg.force === 1) ) {
+        else if ( (cfg.url !== appui.env.params.join("/")) || (cfg.force === 1) ) {
           /* If a second callback is defined, it is triggered instead of defaultPreLinkFunction */
           if (cfg.fn1) {
             ok = cfg.fn1(cfg.url);
           }
-          else if (appui.f.defaultPreLinkFunction) {
-            ok = appui.f.defaultPreLinkFunction(cfg.url, cfg.force, cfg.ele);
+          else if (appui.fn.defaultPreLinkFunction) {
+            ok = appui.fn.defaultPreLinkFunction(cfg.url, cfg.force, cfg.ele);
             if (ok.data !== undefined) {
               $.extend(cfg.obj, ok.data);
               ok = 1;
@@ -809,8 +880,8 @@
             if (ok !== 1 && (typeof ok === 'string') ){
               cfg.url = ok;
             }
-            uniq = appui.f.uniqString(cfg.url, cfg.obj ? cfg.obj : {});
-            appui.f.ajax(cfg.url, cfg.datatype || "json", cfg.obj, uniq, function(res) {
+            uniq = appui.fn.uniqString(cfg.url, cfg.obj ? cfg.obj : {});
+            appui.fn.ajax(cfg.url, cfg.datatype || "json", cfg.obj, uniq, function(res) {
               if (res && res.new_url) {
                 res.old_path = cfg.url;
                 cfg.url = res.new_url;
@@ -822,13 +893,13 @@
               if ( (typeof(res) === 'object') && (Object.keys(res).length === 0) ){
                 return;
               }
-              if ( appui.f.callback(cfg.url, res, cfg.fn, cfg.fn2, cfg.ele) &&
-                res &&
-                res.noNav === undefined) {
+              if ( appui.fn.callback(cfg.url, res, cfg.fn, cfg.fn2, cfg.ele) &&
+                  res &&
+                  res.noNav === undefined) {
 
                 // This solution is not very clean (we can't shorten a URL)
-                if ( appui.v.path.indexOf(cfg.url) !== 0 ){
-                  appui.f.setNavigationVars(cfg.url, (res.siteTitle || appui.v.siteTitle));
+                if ( appui.env.path.indexOf(cfg.url) !== 0 ){
+                  appui.fn.setNavigationVars(cfg.url, (res.siteTitle || appui.env.siteTitle));
                 }
               }
             });
@@ -838,19 +909,19 @@
       },
 
       window: function(url, data, w, h, fn){
-        appui.f.post(url, data, function(d){
+        appui.fn.post(url, data, function(d){
           var type = typeof(d);
           if ( type === 'string' ){
-            appui.f.alert(d, "Returned...", w, h, function(ele){
-              appui.f.callback(url, {}, false, false, ele);
+            appui.fn.alert(d, "Returned...", w, h, function(ele){
+              appui.fn.callback(url, {}, false, false, ele);
               if ($.isFunction(fn) ){
                 eval(fn(ele));
               }
             });
           }
-          if ((type.toLowerCase() === 'object') && d.title && d.html){
-            appui.f.alert(d.html, d.title, w, h, function(ele){
-              appui.f.callback(url, d, false, false, ele);
+          if ((type.toLowerCase() === 'object') && d.html){
+            appui.fn.alert(d.html, d.title ? d.title : ' ', w, h, function(ele){
+              appui.fn.callback(url, d, false, false, ele);
               if ($.isFunction(fn) ){
                 eval(fn(ele));
               }
@@ -862,9 +933,9 @@
       callback: function(url, res, fn, fn2, ele) {
         if (res) {
           var tmp = true,
-            t = typeof res,
-            isObj = t.toLowerCase() === 'object',
-            errTitle;
+              t = typeof res,
+              isObj = t.toLowerCase() === 'object',
+              errTitle;
           if (isObj && res.prescript) {
             /* var ok can be changed to false in prescript execution */
             eval(res.prescript);
@@ -877,7 +948,7 @@
             tmp = fn(res, ele);
           }
           else {
-            tmp = appui.f.defaultLinkFunction(res, ele);
+            tmp = appui.fn.defaultLinkFunction(res, ele);
           }
           if (ele && isObj && (res.html !== undefined) ){
             if (ele.is("input,textarea")) {
@@ -890,51 +961,51 @@
           if (tmp && isObj && res.script) {
             tmp = (function(data, ele){
               return eval(res.script);
-            })(res.data ? res.data : {}, ele ? ele : appui.v.ele);
+            })(res.data ? res.data : {}, ele ? ele : appui.env.ele);
           }
           /* Case where a callback is defined */
           if (tmp && fn2) {
             fn2(res);
           }
-          else if (isObj && appui.f.defaultPostLinkFunction) {
-            appui.f.defaultPostLinkFunction(res, ele);
+          else if (isObj && appui.fn.defaultPostLinkFunction) {
+            appui.fn.defaultPostLinkFunction(res, ele);
           }
           if (tmp && isObj && res.postscript) {
             eval(res.postscript);
           }
           if (isObj && res.error) {
-            errTitle = res.errorTitle || appui.l.server_response;
-            appui.f.alert(res.error, errTitle);
+            errTitle = res.errorTitle || appui.lng.server_response;
+            appui.fn.alert(res.error, errTitle);
           }
         }
         else {
-          appui.f.alert(appui.l.error, appui.l.errorText);
+          appui.fn.alert(appui.lng.error, appui.lng.errorText);
         }
         return tmp;
       },
 
-      /* Set the vars appui.v.url, appui.v.url and appui.v.params, and call appui.f.history if loaded
-       * If a function is passed it will be executed on return instead of appui.f.link
-       */
+      /* Set the vars appui.env.url, appui.env.url and appui.env.params, and call appui.fn.history if loaded
+         * If a function is passed it will be executed on return instead of appui.fn.link
+         */
       setNavigationVars: function(url, title, data, repl) {
-        appui.v.old_path = appui.v.path;
-        appui.v.url = url.indexOf('http') > -1 ? url : appui.v.root + url;
-        appui.v.path = appui.v.url.substr(appui.v.root.length);
-        var tmp = appui.v.path.split("/"), state, obj;
-        appui.v.params = [];
+        appui.env.old_path = appui.env.path;
+        appui.env.url = url.indexOf('http') > -1 ? url : appui.env.root + url;
+        appui.env.path = appui.env.url.substr(appui.env.root.length);
+        var tmp = appui.env.path.split("/"), state, obj;
+        appui.env.params = [];
         $.each(tmp, function(i, v) {
           v = decodeURI(v.trim());
           if (v !== "") {
-            appui.v.params.push(v);
+            appui.env.params.push(v);
           }
         });
-        if ( appui.f.history ){
-          state = appui.f.history.getState();
+        if ( appui.fn.history ){
+          state = appui.fn.history.getState();
           obj = {
-            url: appui.v.path,
-            old_path: appui.v.old_path || null
+            url: appui.env.path,
+            old_path: appui.env.old_path || null
           };
-          if ( state.url === appui.v.url ){
+          if ( state.url === appui.env.url ){
             if ( state.data ){
               $.extend(obj, state.data);
             }
@@ -944,20 +1015,20 @@
             repl = 1;
           }
           if (!title) {
-            title = appui.v.siteTitle;
+            title = appui.env.siteTitle;
           }
           else{
-            title = appui.f.html2text(title);
-            if (title.indexOf(appui.v.siteTitle) === -1 ) {
-              title += ' - ' + appui.v.siteTitle;
+            title = appui.fn.html2text(title);
+            if (title.indexOf(appui.env.siteTitle) === -1 ) {
+              title += ' - ' + appui.env.siteTitle;
             }
           }
           if ( repl ){
             obj.reload = 1;
-            appui.f.history.replaceState(data ? $.extend({}, data, obj) : obj, title, appui.v.url);
+            appui.fn.history.replaceState(data ? $.extend({}, data, obj) : obj, title, appui.env.url);
           }
           else{
-            appui.f.history.pushState(data ? $.extend({}, data, obj) : obj, title, appui.v.url);
+            appui.fn.history.pushState(data ? $.extend({}, data, obj) : obj, title, appui.env.url);
           }
         }
       },
@@ -965,20 +1036,20 @@
       extend: function(){
         var r = arguments[0];
         if ( typeof(r) !== 'object' ){
-          throw new Error("Each argument for appui.f.extend must be an object");
+          throw new Error("Each argument for appui.fn.extend must be an object");
           return;
         }
         if ( $.isArray(r) ){
-          throw new Error("You cannot extend arrays with appui.f.extend");
+          throw new Error("You cannot extend arrays with appui.fn.extend");
           return;
         }
         for ( var i = 1; i < arguments.length; i++ ){
           if ( typeof(arguments[i]) !== 'object' ){
-            throw new Error("Each argument for appui.f.extend must be an object");
+            throw new Error("Each argument for appui.fn.extend must be an object");
             return;
           }
           if ( $.isArray(arguments[i]) ){
-            throw new Error("You cannot extend arrays with appui.f.extend");
+            throw new Error("You cannot extend arrays with appui.fn.extend");
             return;
           }
           for ( var n in arguments[i] ){
@@ -986,7 +1057,7 @@
               r[n] = arguments[i][n];
             }
             else if ( (typeof(arguments[i][n]) === 'object') && !$.isArray(arguments[i][n]) ){
-              appui.f.extend(r[n], arguments[i][n]);
+              appui.fn.extend(r[n], arguments[i][n]);
             }
             else{
               r[n] = arguments[i][n];
@@ -997,9 +1068,9 @@
 
       // Logging function
       log: function() {
-        if (appui.v.logging && window.console !== undefined) {
+        if (appui.env.logging && window.console !== undefined) {
           var args = arguments,
-            i = 0;
+              i = 0;
           while (i < args.length) {
             window.console.log(args[i]);
             i++;
@@ -1014,8 +1085,8 @@
           if (ta === tb) {
             switch (ta) {
               case 'string':
-                ta = appui.f.removeAccents(a[prop]).toLowerCase();
-                tb = appui.f.removeAccents(b[prop]).toLowerCase();
+                ta = appui.fn.removeAccents(a[prop]).toLowerCase();
+                tb = appui.fn.removeAccents(b[prop]).toLowerCase();
                 break;
               case 'number':
                 ta = a[prop];
@@ -1070,7 +1141,7 @@
 
       // Returns an object from an array of objects arr where the prop is equal to val
       get_row: function(arr, prop, val){
-        var idx = appui.f.search(arr, prop, val);
+        var idx = appui.fn.search(arr, prop, val);
         if (idx > -1) {
           return arr[idx];
         }
@@ -1080,7 +1151,7 @@
       // Returns a given property from the row of an array of objects arr where the prop is equal to val
       get_field: function(arr, prop, val, prop2){
         var r;
-        if ( r = appui.f.get_row(arr, prop, val) ){
+        if ( r = appui.fn.get_row(arr, prop, val) ){
           return r[prop2] || false;
         }
         return false;
@@ -1095,13 +1166,13 @@
 
       submit: function(form, e){
         var $form = $(form),
-          url = $form.attr("action") || appui.v.path,
-          data;
+            url = $form.attr("action") || appui.env.path,
+            data;
         if ( (typeof(url) === 'string') && (url.indexOf("http") !== 0 || url.indexOf(window.document.location.hostname) !== -1) && !$form.is("[target]") ){
           if ( e ){
             e.preventDefault();
           }
-          data = appui.f.formdata(form);
+          data = appui.fn.formdata(form);
           if ( data ){
             $form.attr("action", null);
             $form.data("appuiSubmit", 1);
@@ -1113,10 +1184,10 @@
               })
             }
             if ($form.data("script")) {
-              appui.f.post(url, data, $form.data("script"));
+              appui.fn.post(url, data, $form.data("script"));
             }
             else {
-              appui.f.post(url, data);
+              appui.fn.post(url, data);
             }
           }
         }
@@ -1125,12 +1196,12 @@
       formupdated: function(form){
         var res = true,
             $f = $(form),
-            data = appui.f.formdata($f),
+            data = appui.fn.formdata($f),
             $inputs = $f.find("input,select,textarea").filter("[name]").filter(function(){
               return $(this).data("appuiOriginalValue") !== undefined;
             }).each(function(){
               if ( $(this).data("appuiOriginalValue")  != data[$(this).attr("name")] ){
-                //appui.f.log($(this).data("appuiOriginalValue"), data[$(this).attr("name")]);
+                //appui.fn.log($(this).data("appuiOriginalValue"), data[$(this).attr("name")]);
                 res = false;
               }
             });
@@ -1139,25 +1210,25 @@
 
       formdata: function(form){
         var $f = $(form),
-          // inputs with a name
-          $inputs = $f.find("input,select,textarea").filter("[name]"),
-        //num_changes = $inputs.length,
-          $$,
-          res = {},
-          n,
-          v,
-          forget,
-          has_original = null;
+            // inputs with a name
+            $inputs = $f.find("input,select,textarea").filter("[name]"),
+            //num_changes = $inputs.length,
+            $$,
+            res = {},
+            n,
+            v,
+            forget,
+            has_original = null;
         $inputs.each(function(j){
           $$ = $(this);
           forget = false
           if ( (this.tagName.toLowerCase() === 'input') &&
-            (this.type === 'checkbox') &&
-            !$$.is(":checked") ){
+              (this.type === 'checkbox') &&
+              !$$.is(":checked") ){
             v = "0";
           }
           else if ( (this.tagName.toLowerCase() === 'input') &&
-            (this.type === 'radio') ){
+                   (this.type === 'radio') ){
             if ( $$.is(":checked") ){
               v = $$.val();
             }
@@ -1172,22 +1243,51 @@
             has_original = ($$.data("appuiOriginalValue") !== undefined);
           }
           /*
-           if ( has_original ){
-           if ( $$.data("appuiOriginalValue") == v ){
-           num_changes--;
-           }
-           }
-           */
+             if ( has_original ){
+             if ( $$.data("appuiOriginalValue") == v ){
+             num_changes--;
+             }
+             }
+             */
           if ( !forget && !$$.is(":disabled") ){
-            if (this.name.length > 2 && this.name.indexOf("[]") === (this.name.length - 2)) {
-              n = this.name.substr(0, this.name.length - 2);
+            var name = this.name;
+            if (
+              (name.indexOf("[]") === -1) &&
+              (name.indexOf("[") > -1) &&
+              (name.indexOf("]") > -1) &&
+              (name.lastIndexOf("]") === name.length-1)
+            ){
+              name = appui.fn.replaceAll("][", ".", name);
+              name = appui.fn.replaceAll("[", ".", name);
+              name = appui.fn.replaceAll("]", "", name);
+            }
+            if (
+              (name.length > 2) &&
+              (name.indexOf("[]") === (name.length - 2))
+            ) {
+              n = name.substr(0, name.length - 2);
               if (res[n] === undefined) {
                 res[n] = [];
               }
               res[n].push(v);
             }
+            else if ( name.indexOf(".") > -1 ){
+              var tmp, parts = name.split(".");
+              tmp = res;
+              for ( var i = 0; i < parts.length; i++ ){
+                if ( res[parts[i]] === undefined ){
+                  if ( i < (parts.length-1) ){
+                    tmp[parts[i]] = {};
+                  }
+                  else{
+                    tmp[parts[i]] = v;
+                  }
+                }
+                tmp = tmp[parts[i]];
+              }
+            }
             else {
-              res[this.name] = v;
+              res[name] = v;
             }
           }
         });
@@ -1240,17 +1340,17 @@
       wait_for_script: function(varname, fn, attemptsLeft) {
         // 50 = 10 seconds max
         var tick = attemptsLeft || 50,
-          myvar = eval(varname);
+            myvar = eval(varname);
         if ( (myvar === undefined) || (myvar.appui === 'appui') ){
           if (tick > 1) {
             // recurse
             window.setTimeout(function() {
-              appui.f.wait_for_script(varname, fn, tick - 1);
+              appui.fn.wait_for_script(varname, fn, tick - 1);
             }, 200);
           }
           else {
             // no ticks left, log error
-            appui.f.log('Failed to load ' + varname);
+            appui.fn.log('Failed to load ' + varname);
           }
         }
         else {
@@ -1258,28 +1358,28 @@
           fn();
         }
       },
-      
+
       md5: function(st){
         return md5.md5(st);
       },
-      
+
       replaceHistory: function(url, title, data){
-        if ( appui.f.history !== undefined ){
-          if ( (typeof(url) === 'string') && (url.indexOf(appui.v.root) === 0) ){
-            url = url.substr(appui.v.root.length);
+        if ( appui.fn.history !== undefined ){
+          if ( (typeof(url) === 'string') && (url.indexOf(appui.env.root) === 0) ){
+            url = url.substr(appui.env.root.length);
           }
-          var state = appui.f.history.getState();
+          var state = appui.fn.history.getState();
           if ( !data ){
             data = {};
           }
-          data.url = url || state.url.substr(appui.v.root.length);
-          appui.f.history.replaceState(state.data ? $.extend(state.data, data) : data, title || state.title, appui.v.root + data.url);
+          data.url = url || state.url.substr(appui.env.root.length);
+          appui.fn.history.replaceState(state.data ? $.extend(state.data, data) : data, title || state.title, appui.env.root + data.url);
         }
       },
 
       addHistoryScript: function(script){
-        if ( appui.f.history !== undefined ){
-          var state = appui.f.history.getState();
+        if ( appui.fn.history !== undefined ){
+          var state = appui.fn.history.getState();
           if ( state.data.script ){
             state.data.script = function(){
               state.data.script();
@@ -1289,7 +1389,7 @@
           else{
             state.data.script = script;
           }
-          appui.f.replaceHistory(state.url, state.title, state.data);
+          appui.fn.replaceHistory(state.url, state.title, state.data);
         }
       },
 
@@ -1304,9 +1404,9 @@
       rgb2hex: function(rgb){
         rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
         return (rgb && rgb.length === 4) ? "#" +
-        ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
-        ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
-        ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
+          ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
+          ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
+          ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
       },
 
       cssExists: function (f) {
@@ -1323,10 +1423,10 @@
             }
           }
           if ( ok ){
-            //appui.f.log(rules);
+            //appui.fn.log(rules);
             for (var cx = 0; cx < rules.length; cx++) {
-              //appui.f.log(rules[cx].selectorText);
-              if ( new RegExp("(^|\\s)" + appui.f.escapeRegExp(f) + "(\\{|\\s)", "g").test(rules[cx].selectorText) ){
+              //appui.fn.log(rules[cx].selectorText);
+              if ( new RegExp("(^|\\s)" + appui.fn.escapeRegExp(f) + "(\\{|\\s)", "g").test(rules[cx].selectorText) ){
                 return true;
               }
             }
@@ -1337,19 +1437,18 @@
 
       /* Onload functions: keep the var screen width and height up-to-date and binds history if enabled */
       init: function() {
-        var o, p;
-        if ( appui && (appui.v.path === undefined) ){
-          appui.v.root = $("head base").length > 0 ? $("head base").attr("href") : appui.v.host;
+        var o, p, parts;
+        if ( appui && (appui.env.path === undefined) ){
+          appui.env.root = $("head base").length > 0 ? $("head base").attr("href") : appui.env.host;
           /* The server's path (difference between the host and the current dir */
-          appui.v.path = appui.v.url.substr(appui.v.root.length);
-          appui.v.tmp = appui.v.path.split("/");
-          $.each(appui.v.tmp, function(i, v) {
+          appui.env.path = appui.env.url.substr(appui.env.root.length);
+          parts = appui.env.path.split("/");
+          $.each(parts, function(i, v) {
             v = decodeURI(v.trim());
             if (v !== "") {
-              appui.v.params.push(v);
+              appui.env.params.push(v);
             }
           });
-          appui.v.tmp = false;
           if (typeof (window.appui_cfg) === 'object') {
             for (o in appui_cfg) {
               for (p in appui_cfg[o]) {
@@ -1358,45 +1457,45 @@
             }
           }
           for (o in appui) {
-            for (p in appui[o].defaults) {
+            for (p in appui[o]._defaults) {
               if (appui[o][p] === undefined) {
-                appui[o][p] = appui[o].defaults[p];
+                appui[o][p] = appui[o]._defaults[p];
               }
             }
           }
           $(window.document)
             .on("focus", "*", function(e) {
-              e.stopPropagation();
-              appui.v.focused = $(this);
-              appui.v.last_focus = new Date().getMilliseconds();
-            })
+            e.stopPropagation();
+            appui.env.focused = $(this);
+            appui.env.last_focus = new Date().getMilliseconds();
+          })
             .on("click", "a:not(.appui-no)", function(e) {
-              if (this.href && !this.getAttribute("target") && window.Modernizr.history) {
-                appui.f.link(this.href, e);
-                return false;
-              }
-            })
+            if (this.href && !this.getAttribute("target") && window.Modernizr.history) {
+              appui.fn.link(this.href, e);
+              return false;
+            }
+          })
             .on("submit", "form:not(.appui-no)", function(e) {
-              appui.f.submit(this, e);
-            })
+            appui.fn.submit(this, e);
+          })
             .keyup(function(e){
-              if ( (e.key === 'Esc') || (e.key === 'Escape') ){
-                appui.f.closeAlert();
-              }
-            });
-
-          $window.resize(function() {
-            appui.v.width = $window.width();
-            appui.v.height = $window.height();
-            appui.f.defaultResizeFunction();
+            if ( (e.key === 'Esc') || (e.key === 'Escape') ){
+              appui.fn.closeAlert();
+            }
           });
 
-          if (appui.f.history) {
+          $window.resize(function() {
+            appui.env.width = $window.width();
+            appui.env.height = $window.height();
+            appui.fn.defaultResizeFunction();
+          });
+
+          if (appui.fn.history) {
             window.onpopstate = function(e) {
               if ( e.state !== undefined ){
-                var state = appui.f.history.getState();
-                if ( appui.f.defaultHistoryFunction(state) ){
-                  appui.f.link(state.url.substr(appui.v.root.length), $.extend({title: state.title}, state.data));
+                var state = appui.fn.history.getState();
+                if ( appui.fn.defaultHistoryFunction(state) ){
+                  appui.fn.link(state.url.substr(appui.env.root.length), $.extend({title: state.title}, state.data));
                 }
                 else{
                   if ( $.isFunction(state.data.script) ){
@@ -1409,9 +1508,9 @@
           }
         }
       }
-    }
+    },
   };
   $(function() {
-    appui.f.init();
+    appui.fn.init();
   });
 })(jQuery);

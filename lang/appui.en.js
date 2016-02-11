@@ -1,4 +1,4 @@
-appui.l.defaults = {
+appui.lng._defaults = {
   /* User-defined languages elements */
   loading: 'Loading...',
     choose: 'Choose',
