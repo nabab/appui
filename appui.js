@@ -28,7 +28,11 @@
         error: 'Error',
         server_response: 'Server response',
         reload: 'Reload',
-        errorText: 'Something went wrong'
+        errorText: 'Something went wrong',
+        closeAll: "Close all",
+        closeOthers: "Close others",
+        makeStatic: "Pin",
+        unmakeStatic: "Unpin",
       }
     },
     var: {
@@ -1007,7 +1011,7 @@
           };
           if ( state.url === appui.env.url ){
             if ( state.data ){
-              $.extend(obj, state.data);
+              obj = $.extend({}, state.data, obj);
             }
             if ( state.title && !title ){
               title = state.title;
@@ -1025,10 +1029,10 @@
           }
           if ( repl ){
             obj.reload = 1;
-            appui.fn.history.replaceState(data ? $.extend({}, data, obj) : obj, title, appui.env.url);
+            appui.fn.history.replaceState(obj, title, appui.env.url);
           }
           else{
-            appui.fn.history.pushState(data ? $.extend({}, data, obj) : obj, title, appui.env.url);
+            appui.fn.history.pushState(obj, title, appui.env.url);
           }
         }
       },
@@ -1124,13 +1128,28 @@
         });
       },
 
-      // Returns the index of a row in the array of objects arr where the prop is equal to val
+      // Returns the index of a row in the array of objects arr where the prop is equal to val.
+      // Now prop can also be an object with several properties to search against
       search: function(arr, prop, val){
         if ( arr ){
-          var i, r = typeof (arr.toJSON) === 'function' ? arr.toJSON() : arr;
+          var i, found,
+              isObj = typeof(prop) === 'object',
+              r = typeof (arr.toJSON) === 'function' ? arr.toJSON() : arr;
           if (r && r.length && (r[0]!== undefined) ){
             for (i = 0; i < r.length; i++) {
-              if (r[i][prop] && r[i][prop] == val) {
+              if ( isObj ){
+                found = 1;
+                for ( var n in prop ){
+                  if ( r[i][n] != prop[n] ){
+                    found = false;
+                    break;
+                  }
+                }
+                if ( found ){
+                  return i;
+                }
+              }
+              else if (r[i][prop] && r[i][prop] == val) {
                 return i;
               }
             }
@@ -1152,7 +1171,7 @@
       get_field: function(arr, prop, val, prop2){
         var r;
         if ( r = appui.fn.get_row(arr, prop, val) ){
-          return r[prop2] || false;
+          return r[prop2 ? prop2 : val] || false;
         }
         return false;
       },
@@ -1491,6 +1510,9 @@
           });
 
           if (appui.fn.history) {
+            appui.fn.history.clearAllIntervals();
+            window.localStorage.clear();
+            window.sessionStorage.clear();
             window.onpopstate = function(e) {
               if ( e.state !== undefined ){
                 var state = appui.fn.history.getState();
