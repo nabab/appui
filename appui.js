@@ -31,8 +31,8 @@
         errorText: 'Something went wrong',
         closeAll: "Close all",
         closeOthers: "Close others",
-        makeStatic: "Pin",
-        unmakeStatic: "Unpin",
+        pin: "Pin",
+        unpin: "Unpin",
       }
     },
     var: {
