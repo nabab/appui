@@ -903,7 +903,7 @@
 
                 // This solution is not very clean (we can't shorten a URL)
                 if ( appui.env.path.indexOf(cfg.url) !== 0 ){
-                  appui.fn.setNavigationVars(cfg.url, (res.siteTitle || appui.env.siteTitle));
+                  appui.fn.setNavigationVars(cfg.url, (res.title ? res.title + ' - ' : '' ) + appui.env.siteTitle);
                 }
               }
             });
