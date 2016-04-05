@@ -209,7 +209,10 @@
 
           }
           if ( !r ){
-            return wrong_result ? wrong_result : '';
+            return wrong_result && !$.isNumeric(wrong_result) ? wrong_result : '';
+          }
+          if ( wrong_result === 1 ){
+            return
           }
           if ( r.isSame && r.isSame(new Date()) ){
             r = kendo.toString(r, 'H:mm');
@@ -269,6 +272,21 @@
         return appui.env.root + appui.env.params.join("/") + "/";
       },
 
+      isEmpty: function(obj) {
+        if ( !obj ){
+          return true;
+        }
+        if ( $.isArray(obj) ){
+          return obj.length ? false : true;
+        }
+        if ( typeof(obj) === 'object' ){
+          for(var prop in obj) {
+            return false;
+          }
+          return true;
+        }
+        return false;
+      },
       // see http://stackoverflow.com/questions/1144783/replacing-all-occurrences-of-a-string-in-javascript
       replaceAll: function(find, replace, str) {
         if ( str !== undefined ){
@@ -419,8 +437,11 @@
 
       },
 
-      closeAlert: function() {
+      closeAlert: function(ele) {
         if (appui.app.popups.length > 0) {
+          if ( ele && !appui.app.popups[appui.app.popups.length - 1].has(ele) ){
+            return;
+          }
           if (appui.app.popups[appui.app.popups.length - 1].data("kendoWindow")) {
             appui.app.popups[appui.app.popups.length - 1].data("kendoWindow").close();
           }
@@ -510,7 +531,7 @@
         onClose = function(ele){
           appui.app.popups.pop();
           if ( ele.data("appui_callbackClose") ){
-            ele.data("appui_callbackClose")(ele);
+            return ele.data("appui_callbackClose")(ele);
           }
         };
         if ( window.kendo !== undefined ) {
@@ -542,7 +563,7 @@
               this.destroy();
             },
             close: function() {
-              onClose($d);
+              return onClose($d);
             }
           };
           if ( height ){
@@ -591,6 +612,29 @@
         return false;
       },
 
+      /* Adds inputs to a form, respecting the data structure */
+      add_inputs: function(form, params, prefix){
+        var name,
+            is_array;
+        if ( form.length && params ){
+          is_array = $.isArray(params);
+          for ( var i in params ) {
+            name = prefix ? prefix + '[' +
+            ( is_array ? '' : i ) + ']' : i;
+            if ( typeof(params[i]) === 'object' ){
+              appui.fn.add_inputs(form, params[i], name);
+            }
+            else {
+              form.append($("<input>").attr({
+                type: "hidden",
+                name: name
+              }).val(params[i]));
+            }
+          }
+        }
+      },
+
+      /* Creates a form and send data with it to a new window */
       post_out: function(action, params, callback){
         var $form = $("form#appui-form_out"),
             has_appui = false;
@@ -603,15 +647,16 @@
           target: "_blank"
         });
         if ( params ){
-          for ( var i in params ){
-            if ( i === 'appui' ){
+          for ( var i in params ) {
+            if (i === 'appui') {
               has_appui = 1;
+              break;
             }
-            $form.append($("<input>").attr({
-              type: "hidden",
-              name: i
-            }).val(params[i]));
           }
+          if ( has_appui ) {
+            delete params.appui;
+          }
+          appui.fn.add_inputs($form, params);
         }
         if ( !has_appui ){
           $form.append($("<input>").attr({
@@ -913,21 +958,34 @@
       },
 
       window: function(url, data, w, h, fn){
+        if ( !w && $.isFunction(w) ){
+          fn = w;
+        }
+        else if ( !h && $.isFunction(h) ){
+          fn = h;
+        }
         appui.fn.post(url, data, function(d){
           var type = typeof(d);
           if ( type === 'string' ){
             appui.fn.alert(d, "Returned...", w, h, function(ele){
-              appui.fn.callback(url, {}, false, false, ele);
               if ($.isFunction(fn) ){
-                eval(fn(ele));
+                if ( eval(fn(ele)) ){
+                  appui.fn.callback(url, {}, false, false, ele);
+                }
+              }
+              else{
+                appui.fn.callback(url, {}, false, false, ele);
               }
             });
           }
           if ((type.toLowerCase() === 'object') && d.html){
             appui.fn.alert(d.html, d.title ? d.title : ' ', w, h, function(ele){
-              appui.fn.callback(url, d, false, false, ele);
               if ($.isFunction(fn) ){
-                eval(fn(ele));
+                eval(fn(ele, d));
+                appui.fn.callback(url, d, false, false, ele);
+              }
+              else{
+                appui.fn.callback(url, d, false, false, ele);
               }
             });
           }
