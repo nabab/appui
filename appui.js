@@ -1540,22 +1540,17 @@
               }
             }
           }
-          $(window.document)
-            .on("focus", "*", function(e) {
-            e.stopPropagation();
+          $(window.document).on("focus", "*", function(e){
             appui.env.focused = $(this);
             appui.env.last_focus = new Date().getMilliseconds();
-          })
-            .on("click", "a:not(.appui-no)", function(e) {
+          }).on("click", "a:not(.appui-no)", function(e) {
             if (this.href && !this.getAttribute("target") && window.Modernizr.history) {
               appui.fn.link(this.href, e);
               return false;
             }
-          })
-            .on("submit", "form:not(.appui-no)", function(e) {
+          }).on("submit", "form:not(.appui-no)", function(e) {
             appui.fn.submit(this, e);
-          })
-            .keyup(function(e){
+          }).keyup(function(e){
             if ( (e.key === 'Esc') || (e.key === 'Escape') ){
               appui.fn.closeAlert();
             }
