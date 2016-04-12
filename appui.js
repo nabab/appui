@@ -967,7 +967,7 @@
         appui.fn.post(url, data, function(d){
           var type = typeof(d);
           if ( type === 'string' ){
-            appui.fn.alert(d, "Returned...", w, h, function(ele){
+            appui.fn.alert(d, "Returned...", w ? w : "auto", h ? h : "auto", function(ele){
               if ($.isFunction(fn) ){
                 if ( eval(fn(ele)) ){
                   appui.fn.callback(url, {}, false, false, ele);
@@ -979,7 +979,7 @@
             });
           }
           if ((type.toLowerCase() === 'object') && d.html){
-            appui.fn.alert(d.html, d.title ? d.title : ' ', w, h, function(ele){
+            appui.fn.alert(d.html, d.title ? d.title : ' ', w ? w : "auto", h ? h : "auto", function(ele){
               if ($.isFunction(fn) ){
                 eval(fn(ele, d));
                 appui.fn.callback(url, d, false, false, ele);
@@ -1592,5 +1592,187 @@
   };
   $(function() {
     appui.fn.init();
+
+    // Kendo adaptations
+    if ( window.kendo !== undefined ) {
+
+      var kendo = window.kendo,
+          ui = kendo.ui,
+          fn;
+
+      fn = kendo.ui.DropDownList.prototype.open;
+        kendo.ui.DropDownList.prototype.open = function () {
+          var res = fn.apply(this, arguments);
+          var w = this.list.width();
+          this.list.width("auto");
+          var w2 = this.list.width();
+          if (w2 < w) {
+            this.list.width(w);
+          }
+          return res;
+        };
+      fn = kendo.ui.ComboBox.prototype.open;
+      kendo.ui.ComboBox.prototype.open = function () {
+        var res = fn.apply(this, arguments);
+        var w = this.list.width();
+        this.list.width("auto");
+        var w2 = this.list.width();
+        if (w2 < w) {
+          this.list.width(w);
+        }
+        return res;
+      };
+
+      var dropDownTreeView = ui.Widget.extend({
+        _uid: null,
+        _selId: null,
+        _treeview: null,
+        _dropdown: null,
+
+        init: function(element, options) {
+          var that = this,
+              isInput = element.tagName.toLowerCase() === "input";
+
+          ui.Widget.fn.init.call(that, element, options);
+
+          that._uid = new Date().getTime();
+
+          var classes = $(element).attr("class");
+          var of = $(element).css("overflow");
+          var mh = $(element).css("max-height");
+          var of = $(element).css("overflow");
+          var w = $(element).width() - 24;
+          var additionalStyle = "";
+          var container = $(element);
+          if (of && mh) {
+            additionalStyle = kendo.format("max-height:{0};overflow:{1};", mh, of);
+          }
+          if ( w ){
+            additionalStyle += kendo.format("width:{0};", w);
+          }
+          if ( isInput ){
+            container = $(kendo.format('<div class="{0}" style="{1}"/>', classes, additionalStyle));
+            $(element).hide().after(container);
+          }
+          var treeID = 'extTreeView' + that._uid;
+          container.append(kendo.format("<input id='extDropDown{0}' class='k-ext-dropdown {1}'/>", that._uid, classes));
+          container.append(kendo.format("<div id='{0}' class='k-ext-treeview' style='z-index:1;{1}'/>", treeID, additionalStyle));
+
+          var $treeviewRootElem;
+          var $dropdownRootElem;
+
+          var ddCfg = {
+            dataSource: [],
+            dataTextField: "text",
+            dataValueField: "value",
+            open: function(e) {
+              //to prevent the dropdown from opening or closing. A bug was found when clicking on the dropdown to
+              //"close" it. The default dropdown was visible after the treeview had closed.
+              e.preventDefault();
+              // If the treeview is not visible, then make it visible.
+              if (!$treeviewRootElem.hasClass("k-custom-visible")) {
+                // Position the treeview so that it is below the dropdown.
+                $treeviewRootElem.css({
+                  "top": $dropdownRootElem.position().top + $dropdownRootElem.height(),
+                  "left": $dropdownRootElem.position().left
+                });
+                // Display the treeview.
+                $treeviewRootElem.slideToggle("fast", function() {
+                  that._dropdown.close();
+                  $treeviewRootElem.addClass("k-custom-visible");
+                });
+              }
+              if (that._selId) {
+                that._treeview.expandTo(that._selId);
+                var ddVal = $dropdownRootElem.find("span.k-input").text();
+                var selectedNode = that._treeview.findByText(ddVal);
+                that._treeview.select(selectedNode);
+              }
+              var list = $("#" + treeID);
+              var width = list.width();
+              list.width("auto");
+              var width2 = list.width();
+              var width3 = $dropdownRootElem.width() + 22;
+              if ( width3 > width2 ){
+                list.width(width3);
+              }
+              else if ( width2 > width ){
+                list.css({width: width2});
+              }
+              else {
+                list.width(width);
+              }
+            }
+          };
+          if ( options.optionLabel ){
+            ddCfg.optionLabel = options.optionLabel;
+          }
+          if ( options.change ){
+            ddCfg.change = options.change;
+          }
+          if ( options.select ){
+            ddCfg.select = options.select;
+          }
+
+          // Create the dropdown.
+          that._dropdown = $(kendo.format("#extDropDown{0}", that._uid)).kendoDropDownList(ddCfg).data("kendoDropDownList");
+
+          if (options.dropDownWidth) {
+            that._dropdown._inputWrapper.width(options.dropDownWidth);
+          }
+          else if ( w ){
+            that._dropdown._inputWrapper.css({width: w}).parent().css({width: w});
+          }
+
+          $dropdownRootElem = $(that._dropdown.element).closest("span.k-dropdown"); // Create the treeview.
+          that._treeview = $(kendo.format("#extTreeView{0}", that._uid)).kendoTreeView(options.treeview).data("kendoTreeView");
+          that._treeview.bind("select", function(e) {
+            // When a node is selected, display the text for the node in the dropdown and hide the treeview.
+            $dropdownRootElem.find("span.k-input").text($(e.node).children("div").text());
+            $treeviewRootElem.slideToggle("fast", function() {
+              that._selId = $("#extTreeView" + that._uid).data("kendoTreeView").dataItem(e.node).id;
+              $treeviewRootElem.removeClass("k-custom-visible");
+              that.trigger("select", e);
+            });
+          });
+
+          $treeviewRootElem = $(that._treeview.element).closest("div.k-treeview"); // Hide the treeview.
+          $treeviewRootElem
+            .width($dropdownRootElem.width() - 2)
+            .css({
+              "border": "1px solid #ccc",
+              "display": "none",
+              "position": "absolute",
+              "background-color": that._dropdown.list.css("background-color")
+            });
+
+          $(document).click(function(e) {
+            // Ignore clicks on the treetriew.
+            if ($(e.target).closest("div.k-treeview").length === 0) {
+              // If visible, then close the treeview.
+              if ($treeviewRootElem.hasClass("k-custom-visible")) {
+                $treeviewRootElem.slideToggle("fast", function() {
+                  $treeviewRootElem.removeClass("k-custom-visible");
+                });
+              }
+            }
+          });
+        },
+
+        dropDownList: function() {
+          return this._dropdown;
+        },
+
+        treeview: function() {
+          return this._treeview;
+        },
+
+        options: {
+          name: "DropDownTreeView"
+        }
+      });
+      ui.plugin(dropDownTreeView);
+
+    }
   });
 })(jQuery);

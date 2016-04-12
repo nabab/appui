@@ -1,6 +1,3 @@
-html{
-  font-size:0.8em;
-}
 a{
   outline-style: none;
   text-decoration: none;
@@ -8,28 +5,29 @@ a{
 table td{
   vertical-align:top
 }
-.red, .red a{
+.appui-red,
+.appui-red a{
   color:#F00 !important;
 }
-.green, .green a{
+.appui-green,
+.appui-green a{
   color:#6C0 !important;
 }
 .appui-section{
-  margin-top:0.75em;
-}
-fieldset,.appui-section{
-  float:none;
-  clear:both;
+  display:block;
   position:relative;
+  float:left;
+  clear:both !important;
+  vertical-align:top;
   background-image:none !important;
   border-width:0.2% !important;
   width: 96% !important;
   margin: 0.5em 0.9% 0.5em 0.9% !important;
   padding: 0.5em 0.9% 0.5em 0.9% !important;
   /* Attempt for nesting forms */
-  fieldset,.appui-section{
+  .appui-section{
     border-style:dashed;
-    fieldset,.appui-section{
+    .appui-section{
       border-style:dotted;
     }
   }
@@ -47,6 +45,13 @@ legend,.appui-section .appui-legend{
   padding:0 1em;
   cursor:pointer;
 }
+.appui-spacer{
+  display:block;
+  position:relative;
+  float:left !important;
+  width: 10px;
+  min-height: 1px;
+}
 .appui-section .appui-legend{
   position:absolute;
   width:auto;
@@ -54,53 +59,62 @@ legend,.appui-section .appui-legend{
   top:-0.8em;
   background-color:inherit;
 }
-.appui-form-label{
+.appui-block{
   display:block;
-  margin:0.3em 2em 0.3em 0;
-  padding-right: 60px;
-  float:left !important;
-  clear:left !important;
-  vertical-align:top;
   position:relative;
+  float:left !important;
+}
+.appui-iblock{
+  display:inline-block;
+  position:relative;
+}
+.appui-form-label{
+  .appui-block;
+  margin:0.3em 2em 0.3em 0;
+  clear:left !important;
   min-height:1.5em;
-  white-space:nowrap;
   width: 200px;
+  vertical-align:top;
+  white-space:nowrap;
+  padding-right: 60px;
 }
 .appui-form-field{
-  display:block;
+  .appui-block;
   margin:0.3em 0;
-  float:left !important;
   clear:right !important;
-  vertical-align:top;
-  position:relative;
   width: 500px;
+  vertical-align:top;
+}
+.appui-form-full{
+  .appui-block;
+  margin:0.3em 0;
+  clear:both;
+  width: 100%;
+  vertical-align:top;
+  min-height:1.5em;
 }
 .appui-elem-hidden{
   display:none !important;
 }
-input.appui-form-field, .appui-form-field input, .appui-form-label input, input.appui-form-label{
+input.appui-form-field,
+.appui-form-field input,
+.appui-form-label input,
+input.appui-form-label{
   padding:0.1em;
 }
-.appui-label-underline .appui-form-label{
-  text-decoration:underline;
-}
-.appui-label-bold .appui-form-label{
-  font-weight:bold;
-}
 .appui-line-breaker{
-  float:left;
+  .appui-block;
   clear:both;
   padding-bottom:15px;
   width:100%;
 }
 .appui-fl{
-  position: relative;
-  float:left;
+  .appui-block;
 }
 .appui-nl{
-  float:left;
+  .appui-block;
   clear:both;
-  width:100%;
+  width:100% !important;
 }
 .appui-no-reset{
   font-size:1em;
@@ -114,50 +128,74 @@ input.appui-form-field, .appui-form-field input, .appui-form-label input, input.
     list-style:disc;
   }
 }
+.appui-xl,
+.appui-xlarge{
+  font-size: 1.7em !important;
+}
+.appui-l,
+.appui-large{
+  font-size: 1.4em !important;
+}
+.appui-s,
+.appui-small{
+  font-size: 0.8em !important;
+}
+.appui-xs,
+.appui-xsmall{
+  font-size: 0.6em !important;
+}
 /* hidden */
-.appui-h,.appui-hidden{
-  display:none;
+.appui-h,
+.appui-hidden{
+  display:none !important;
 }
 /* centered */
-.appui-c,.appui-centered{
-  text-align:center;
+.appui-c,
+.appui-centered{
+  text-align:center !important;
 }
 /* justified */
-.appui-j,.appui-justified{
-  text-align:justify;
+.appui-j,
+.appui-justified{
+  text-align:justify !important;
 }
 /* left */
-.appui-l,.appui-left{
-  text-align:left;
+.appui-l,
+.appui-left{
+  text-align:left !important;
 }
 /* right */
-.appui-r,.appui-right{
-  text-align:right;
+.appui-r,
+.appui-right{
+  text-align:right !important;
 }
 /* mouse pointer */
-.appui-p,.appui-pointer{
-  cursor:pointer;
+.appui-p,
+.appui-pointer{
+  cursor:pointer !important;
 }
 /* bold */
-.appui-b,.appui-bold{
-  font-weight:bold;
+.appui-b,
+.appui-bold{
+  font-weight:bold !important;
 }
 /* italic */
-.appui-i,.appui-italic{
-  font-style:italic;
+.appui-i,
+.appui-italic{
+  font-style:italic !important;
 }
 /* underlined */
-.appui-u,.appui-underlined{
-  text-decoration:underline;
+.appui-u,
+.appui-underlined{
+  text-decoration:underline !important;
 }
 /* no border */
-.appui-o,.appui-no-border{
-  border:0;
-  outline:0;
+.appui-o,
+.appui-no-border{
+  border:0 !important;
+  outline:0 !important;
 }
-.jstree a{
-  font-weight:normal !important;
-}
+iframe.appui-h,
 iframe.appui-hidden{
   position:absolute;
   top:-100px;
