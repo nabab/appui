@@ -1541,7 +1541,7 @@
             }
           }
           $(window.document).on("focus", "*", function(e){
-            appui.env.focused = $(this);
+            appui.env.focused = $(e.target);
             appui.env.last_focus = new Date().getMilliseconds();
           }).on("click", "a:not(.appui-no)", function(e) {
             if (this.href && !this.getAttribute("target") && window.Modernizr.history) {
