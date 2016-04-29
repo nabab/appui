@@ -502,9 +502,6 @@
         if (!title) {
           title = appui.lng.error;
         }
-        if (!width) {
-          width = msg.length > 250 ? 600 : 250;
-        }
         if (!height) {
           height = false;
         }
@@ -978,8 +975,8 @@
               }
             });
           }
-          if ((type.toLowerCase() === 'object') && d.html){
-            appui.fn.alert(d.html, d.title ? d.title : ' ', w ? w : "auto", h ? h : "auto", function(ele){
+          if ((type.toLowerCase() === 'object') && d.content){
+            appui.fn.alert(d.content, d.title ? d.title : ' ', w ? w : "auto", h ? h : "auto", function(ele){
               if ($.isFunction(fn) ){
                 eval(fn(ele, d));
                 appui.fn.callback(url, d, false, false, ele);
@@ -1012,12 +1009,12 @@
           else {
             tmp = appui.fn.defaultLinkFunction(res, ele);
           }
-          if (ele && isObj && (res.html !== undefined) ){
+          if (ele && isObj && (res.content !== undefined) ){
             if (ele.is("input,textarea")) {
-              ele.val(res.html);
+              ele.val(res.content);
             }
             else {
-              ele.html(res.html);
+              ele.html(res.content);
             }
           }
           if (tmp && isObj && res.script) {
@@ -1412,6 +1409,9 @@
             wscript.SendKeys("{F11}");
           }
         }
+        setTimeout(function(){
+          appui.fn.defaultResizeFunction();
+        }, 200);
       },
 
       wait_for_script: function(varname, fn, attemptsLeft) {
