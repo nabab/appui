@@ -33,6 +33,8 @@
         closeOthers: "Close others",
         pin: "Pin",
         unpin: "Unpin",
+        yes: "Yes",
+        no: "No",
       }
     },
     var: {
@@ -1653,8 +1655,15 @@
           container.append(kendo.format("<input id='extDropDown{0}' class='k-ext-dropdown {1}'/>", that._uid, classes));
           container.append(kendo.format("<div id='{0}' class='k-ext-treeview' style='z-index:1;{1}'/>", treeID, additionalStyle));
 
-          var $treeviewRootElem;
-          var $dropdownRootElem;
+          var $treeviewRootElem,
+              $dropdownRootElem,
+              ds = [];
+          if ( inputVal ){
+            ds.push({
+              text: inputVal,
+              value: inputVal
+            });
+          }
 
           var ddCfg = {
             dataSource: [],
@@ -1722,6 +1731,7 @@
           $dropdownRootElem = $(that._dropdown.element).closest("span.k-dropdown"); // Create the treeview.
           that._treeview = $(kendo.format("#extTreeView{0}", that._uid)).kendoTreeView(options.treeview).data("kendoTreeView");
           that._treeview.bind("select", function(e) {
+            appui.fn.log("SELECT", e);
             // When a node is selected, display the text for the node in the dropdown and hide the treeview.
             $dropdownRootElem.find("span.k-input").text($(e.node).children("div").text());
             $treeviewRootElem.slideToggle("fast", function() {
@@ -1740,7 +1750,11 @@
               "position": "absolute",
               "background-color": that._dropdown.list.css("background-color")
             });
-
+          var inputVal = that.element.val();
+          appui.fn.log("VALUE2", inputVal);
+          if ( inputVal ){
+            that.value(inputVal);
+          }
           $(document).click(function(e) {
             // Ignore clicks on the treetriew.
             if ($(e.target).closest("div.k-treeview").length === 0) {
@@ -1752,6 +1766,22 @@
               }
             }
           });
+        },
+
+        value: function (value) {
+          if (value !== undefined) {
+            var that = this,
+                dataItem = that._treeview.dataSource.get(value),
+                item = that._treeview.findByUid(dataItem.uid),
+                $dropdownRootElem = $(that._dropdown.element).closest("span.k-dropdown");
+            that._dropdown.value(value);
+            $dropdownRootElem.find("span.k-input").text($(item).children("div").text());
+            that._selId = value;
+            return this.element.val(value);
+          }
+          else {
+            return this.element.val();
+          }
         },
 
         dropDownList: function() {

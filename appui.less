@@ -15,15 +15,12 @@ table td{
 }
 .appui-section{
   display:block;
-  position:relative;
-  float:left;
-  clear:both !important;
   vertical-align:top;
-  background-image:none !important;
-  border-width:0.2% !important;
-  width: 96% !important;
-  margin: 0.5em 0.9% 0.5em 0.9% !important;
-  padding: 0.5em 0.9% 0.5em 0.9% !important;
+  background-image:none;
+  border-color: inherit;
+  border: 2px solid;
+  margin: 1em;
+  padding: 1em;
   /* Attempt for nesting forms */
   .appui-section{
     border-style:dashed;
@@ -32,11 +29,9 @@ table td{
     }
   }
   hr{
-    float:left;
-    clear:both;
-    width:100%;
-    border:0;
-    height:2px
+    border:2px;
+    height:2px !important;
+    margin: 1em;
   }
 }
 .appui-section legend,.appui-legend{
@@ -61,12 +56,10 @@ table td{
 }
 .appui-block{
   display:block;
-  position:relative;
   float:left !important;
 }
 .appui-iblock{
   display:inline-block;
-  position:relative;
 }
 .appui-form-label{
   .appui-block;
@@ -84,6 +77,10 @@ table td{
   clear:right !important;
   width: 500px;
   vertical-align:top;
+}
+.appui-form-field .appui-form-field, .appui-form-field .appui-form-label, .appui-form-label .appui-form-field, .appui-form-label .appui-form-label{
+  margin-top: 0!important;
+  margin-bottom: 0!important;
 }
 .appui-form-full{
   .appui-block;
