@@ -1232,6 +1232,25 @@
         }
         return false;
       },
+      
+      // Filters an object
+      filter_object: function(obj, deep){
+        var r = false;
+        if ( typeof(o) === "object" ){
+          r = {};
+          for ( var n in obj ){
+            if ( n.indexOf('_') !== 0 ){
+              if ( deep && (typeof(obj[n]) === "object") ){
+                r[n] = appui.fn.filter_object(obj[n], true);
+              }
+              else{
+                r[n] = obj[n];
+              }
+            }
+          }
+        }
+        return r;
+      },
 
       cancel: function(form, e){
       },

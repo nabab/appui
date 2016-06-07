@@ -13,106 +13,6 @@ table td{
 .appui-green a{
   color:#6C0 !important;
 }
-.appui-section{
-  display:block;
-  vertical-align:top;
-  background-image:none;
-  border-color: inherit;
-  border: 2px solid;
-  margin: 1em;
-  padding: 1em;
-  /* Attempt for nesting forms */
-  .appui-section{
-    border-style:dashed;
-    .appui-section{
-      border-style:dotted;
-    }
-  }
-  hr{
-    border:2px;
-    height:2px !important;
-    margin: 1em;
-  }
-}
-.appui-section legend,.appui-legend{
-  font-weight:bold;
-  font-size:1.2em;
-  padding:0 1em;
-  cursor:pointer;
-}
-.appui-spacer{
-  display:block;
-  position:relative;
-  float:left !important;
-  width: 10px;
-  min-height: 1px;
-}
-.appui-section .appui-legend{
-  position:absolute;
-  width:auto;
-  white-space:nowrap;
-  top:-0.8em;
-  background-color:inherit;
-}
-.appui-block{
-  display:block;
-  float:left !important;
-}
-.appui-iblock{
-  display:inline-block;
-}
-.appui-form-label{
-  .appui-block;
-  margin:0.3em 2em 0.3em 0;
-  clear:left !important;
-  min-height:1.5em;
-  width: 200px;
-  vertical-align:top;
-  white-space:nowrap;
-  padding-right: 60px;
-}
-.appui-form-field{
-  .appui-block;
-  margin:0.3em 0;
-  clear:right !important;
-  width: 500px;
-  vertical-align:top;
-}
-.appui-form-field .appui-form-field, .appui-form-field .appui-form-label, .appui-form-label .appui-form-field, .appui-form-label .appui-form-label{
-  margin-top: 0!important;
-  margin-bottom: 0!important;
-}
-.appui-form-full{
-  .appui-block;
-  margin:0.3em 0;
-  clear:both;
-  width: 100%;
-  vertical-align:top;
-  min-height:1.5em;
-}
-.appui-elem-hidden{
-  display:none !important;
-}
-input.appui-form-field,
-.appui-form-field input,
-.appui-form-label input,
-input.appui-form-label{
-  padding:0.1em;
-}
-.appui-line-breaker{
-  .appui-block;
-  clear:both;
-  padding-bottom:15px;
-  width:100%;
-}
-.appui-fl{
-  .appui-block;
-}
-.appui-nl{
-  .appui-block;
-  clear:both;
-  width:100% !important;
-}
 .appui-no-reset{
   font-size:1em;
   p{
@@ -124,6 +24,42 @@ input.appui-form-label{
   li{
     list-style:disc;
   }
+}
+.appui-w-100{
+  width: 100% !important;
+}
+.appui-w-75{
+  width: 75% !important;;
+}
+.appui-w-66{
+  width: 66.66% !important;;
+}
+.appui-w-50{
+  width: 50% !important;;
+}
+.appui-w-33{
+  width: 33.33% !important;;
+}
+.appui-w-25{
+  width: 25% !important;;
+}
+.appui-h-100{
+  height: 100% !important;;
+}
+.appui-h-75{
+  height: 75% !important;;
+}
+.appui-h-66{
+  height: 66.66% !important;;
+}
+.appui-h-50{
+  height: 50% !important;;
+}
+.appui-h-33{
+  height: 33.33% !important;;
+}
+.appui-h-25{
+  height: 25% !important;;
 }
 .appui-xl,
 .appui-xlarge{
@@ -200,6 +136,106 @@ iframe.appui-hidden{
   width:1px;
   height:1px;
   overflow:hidden;
+}
+.appui-section{
+  display:block;
+  vertical-align:top;
+  background-image:none;
+  border-color: inherit;
+  border: 2px solid;
+  margin: 1em;
+  padding: 1em;
+  /* Attempt for nesting forms */
+  .appui-section{
+    border-style:dashed;
+    .appui-section{
+      border-style:dotted;
+    }
+  }
+  hr{
+    border:2px;
+    height:2px !important;
+    margin: 1em;
+  }
+}
+.appui-section legend,.appui-legend{
+  font-weight:bold;
+  font-size:1.2em;
+  padding:0 1em;
+  cursor:pointer;
+}
+.appui-spacer{
+  display:block;
+  position:relative;
+  float:left !important;
+  width: 10px;
+  min-height: 1px;
+}
+.appui-section .appui-legend{
+  position:absolute;
+  width:auto;
+  white-space:nowrap;
+  top:-0.8em;
+  background-color:inherit;
+}
+.appui-block{
+  display:block;
+  float:left !important;
+}
+.appui-iblock{
+  display:inline-block;
+}
+.appui-form-label{
+  .appui-block;
+  margin:0.3em 2em 0.3em 0;
+  clear:left !important;
+  min-height:1.5em;
+  width: 200px;
+  vertical-align:top;
+  white-space:nowrap;
+  padding-right: 60px;
+}
+.appui-form-field{
+  .appui-block;
+  margin:0.3em 0;
+  clear:right !important;
+  width: 500px;
+  vertical-align:top;
+}
+.appui-form-field .appui-form-field, .appui-form-field .appui-form-label, .appui-form-label .appui-form-field, .appui-form-label .appui-form-label{
+  margin-top: 0!important;
+  margin-bottom: 0!important;
+}
+.appui-form-full{
+  .appui-block;
+  .appui-w-100;
+  margin:0.3em 0;
+  clear:both;
+  vertical-align:top;
+  min-height:1.5em;
+}
+.appui-elem-hidden{
+  display:none !important;
+}
+input.appui-form-field,
+.appui-form-field input,
+.appui-form-label input,
+input.appui-form-label{
+  padding:0.1em;
+}
+.appui-line-breaker{
+  .appui-block;
+  .appui-w-100;
+  clear:both;
+  padding-bottom:15px;
+}
+.appui-fl{
+  .appui-block;
+}
+.appui-nl{
+  .appui-block;
+  .appui-w-100;
+  clear:both;
 }
 .appui-avatar{
   font-style: italic;
