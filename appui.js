@@ -1585,8 +1585,8 @@
 
           if (appui.fn.history) {
             appui.fn.history.clearAllIntervals();
-            window.localStorage.clear();
-            window.sessionStorage.clear();
+            //window.localStorage.clear();
+            //window.sessionStorage.clear();
             window.onpopstate = function(e) {
               if ( e.state !== undefined ){
                 var state = appui.fn.history.getState();
