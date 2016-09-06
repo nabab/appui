@@ -15,6 +15,9 @@
   /*global window */
   /*global jQuery */
   /*global appui */
+  if ( $.fn.reverse === undefined ){
+    $.fn.reverse = [].reverse;//save a new function from Array.reverse
+  }
   var $window = $(window);
   window.appui = {
     opt: {
@@ -23,6 +26,8 @@
     lng: {
       _defaults: {
         /* User-defined languages elements */
+        select_unselect_all: "Select/Clear all",
+        search: 'Search',
         loading: 'Loading...',
         choose: 'Choose',
         error: 'Error',
@@ -35,6 +40,7 @@
         unpin: "Unpin",
         yes: "Yes",
         no: "No",
+        untitled: "Untitled"
       }
     },
     var: {
@@ -172,6 +178,7 @@
       loaders: [],
       /* appui.env.params is an array of each element of the path */
       params: [],
+      isInit: false
     },
     app: {
       popups: [],
@@ -385,6 +392,17 @@
         return result;
       },
 
+      numProperties: function(obj){
+        if ( typeof(obj) !== 'object' ){
+          return false;
+        }
+        var i = 0;
+        for ( var n in obj ){
+          i++;
+        }
+        return i;
+      },
+
       removeAccents: function(st){
         var m = appui.var.defaultDiacriticsRemovalMap;
         for(var i=0; i < m.length; i++) {
@@ -420,6 +438,11 @@
           }
         }
         return st;
+      },
+
+      isColor: function(st){
+        var reg = new RegExp('^(#[a-f0-9]{6}|#[a-f0-9]{3}|rgb *\( *[0-9]{1,3}%? *, *[0-9]{1,3}%? *, *[0-9]{1,3}%? *\)|rgba *\( *[0-9]{1,3}%? *, *[0-9]{1,3}%? *, *[0-9]{1,3}%? *, *[0-9]{1,3}%? *\)|black|green|silver|gray|olive|white|yellow|maroon|navy|red|blue|purple|teal|fuchsia|aqua)$', 'i');
+        return reg.test(st);
       },
 
       isDimension: function(st){
@@ -542,7 +565,8 @@
             width: width,
             pinned: options.pinned !== undefined ? options.pinned : true,
             resizable: options.resizable !== undefined ? options.resizable : true,
-            actions: [
+            closable: options.closable !== undefined ? options.closable : true,
+            actions: options.actions !== undefined ? options.actions : [
               "Maximize",
               "Close"
             ],
@@ -836,15 +860,15 @@
             data: JSON.stringify(data),
             contentType: 'application/json',
             success: function(res) {
-              if ($.isFunction(success) ){
-                success(res);
-              }
               if ( uniq ) {
                 appui.fn.endLoadingFunction(url, uniq, data, res);
                 var idx = $.inArray(uniq, appui.env.loaders);
                 if (idx > -1) {
                   appui.env.loaders.splice(idx, 1);
                 }
+              }
+              if ($.isFunction(success) ){
+                success(res);
               }
             },
             error: function(xhr, textStatus, errorThrown) {
@@ -855,15 +879,12 @@
                   appui.env.loaders.splice(idx, 1);
                 }
               }
+              var ok = 1;
               if ($.isFunction(failure) ){
-                failure(res);
+                ok = failure(res);
               }
-              else if (appui.fn.ajaxErrorFunction()) {
-                var st = '<h3>' + textStatus + '</h3>';
-                if (errorThrown !== undefined) {
-                  st += '<p>' + errorThrown + '</p>';
-                }
-                appui.fn.alert(st);
+              if ( ok ) {
+                appui.fn.ajaxErrorFunction(xhr, textStatus, errorThrown);
               }
             }
           });
@@ -892,6 +913,9 @@
             ok = 1,
             i,
             uniq;
+        if ( cfg === true ){
+          return true;
+        }
         /* If we can't find a correct link we load the current URL */
         if ( !cfg || (cfg.url === undefined) ) {
           return appui.fn.link(window.location.href);
@@ -906,7 +930,7 @@
           return false;
         }
         /* Opens an external page in a new window */
-        if ( (cfg.url.indexOf("http") === 0) &&
+        if ( ((cfg.url.indexOf("http://") === 0) || (cfg.url.indexOf("https://") === 0)) &&
             (cfg.url.indexOf(window.document.location.hostname) === -1) && cfg.e) {
           cfg.e.preventDefault();
           window.open(cfg.url);
@@ -1114,10 +1138,10 @@
             return;
           }
           for ( var n in arguments[i] ){
-            if ( r[n] === undefined ){
-              r[n] = arguments[i][n];
-            }
-            else if ( (typeof(arguments[i][n]) === 'object') && !$.isArray(arguments[i][n]) ){
+            if ( (r[n] !== undefined) &&
+              (typeof(arguments[i][n]) === 'object') &&
+              !$.isArray(arguments[i][n])
+            ){
               appui.fn.extend(r[n], arguments[i][n]);
             }
             else{
@@ -1127,7 +1151,21 @@
         }
       },
 
-      // Logging function
+      autoExtend: function(namespace, obj){
+        if ( !appui[namespace] ){
+          appui[namespace] = {};
+          $.extend(appui[namespace], obj);
+        }
+        else if ( appui.env.isInit ){
+          $.extend(appui[namespace], obj);
+        }
+        else if ( appui[namespace]._defaults ){
+          $.extend(appui[namespace]._defaults, obj);
+        }
+      },
+
+
+  // Logging function
       log: function() {
         if (appui.env.logging && window.console !== undefined) {
           var args = arguments,
@@ -1142,44 +1180,33 @@
       order: function(arr, prop, dir) {
         var r = typeof (arr.toJSON) === 'function' ? arr.toJSON() : arr;
         return r.sort(function(a, b) {
-          var ta = (typeof (a[prop])).toLowerCase(), tb = (typeof (b[prop])).toLowerCase();
+          var va = a[prop],
+              vb = b[prop],
+              ta = (typeof (a[prop])).toLowerCase(),
+              tb = (typeof (b[prop])).toLowerCase();
           if (ta === tb) {
             switch (ta) {
               case 'string':
-                ta = appui.fn.removeAccents(a[prop]).toLowerCase();
-                tb = appui.fn.removeAccents(b[prop]).toLowerCase();
-                break;
-              case 'number':
-                ta = a[prop];
-                tb = b[prop];
+                va = appui.fn.removeAccents(a[prop]).toLowerCase();
+                vb = appui.fn.removeAccents(b[prop]).toLowerCase();
                 break;
               case 'boolean':
-                ta = a[prop] ? 1 : 0;
-                tb = b[prop] ? 1 : 0;
+                va = a[prop] ? 1 : 0;
+                vb = b[prop] ? 1 : 0;
                 break;
               case 'object':
-                if (a[prop].getTimestamp) {
-                  ta = a[prop].getTimestamp();
-                  tb = b[prop].getTimestamp();
+                if (a[prop].getTime) {
+                  va = a[prop].getTime();
+                  vb = b[prop].getTime();
                 }
                 break;
             }
           }
-          if (dir === 'desc') {
-            if (ta < tb) {
-              return 1;
-            }
-            if (ta > tb) {
-              return -1;
-            }
+          if ( va < vb ) {
+            return dir === 'desc' ? 1 : -1;
           }
-          else {
-            if (ta < tb) {
-              return -1;
-            }
-            if (ta > tb) {
-              return 1;
-            }
+          if ( va > vb ) {
+            return dir === 'desc' ? -1 : 1;
           }
           return 0;
         });
@@ -1187,17 +1214,38 @@
 
       // Returns the index of a row in the array of objects arr where the prop is equal to val.
       // Now prop can also be an object with several properties to search against
-      search: function(arr, prop, val){
+      search: function(arr, prop, val, mode){
         if ( arr ){
-          var i, found,
+          var i,
+              found,
               isObj = typeof(prop) === 'object',
-              r = typeof (arr.toJSON) === 'function' ? arr.toJSON() : arr;
+              r = typeof (arr.toJSON) === 'function' ? arr.toJSON() : arr,
+              compare = function(v1, v2){
+                switch ( mode ){
+                  case "===":
+                    return v1 === v2;
+                  case "contains":
+                    if ( v1 && v2 ){
+                      return v1.toString().indexOf(v2.toString()) !== -1;
+                    }
+                  case "starts":
+                    if ( v1 && v2 ) {
+                      return v1.toString().indexOf(v2.toString()) === 0;
+                    }
+                  case "startsi":
+                    if ( v1 && v2 ) {
+                      return v2.toString().indexOf(v1.toString()) === 0;
+                    }
+                  default:
+                    return v1 == v2;
+                }
+              };
           if (r && r.length && (r[0]!== undefined) ){
             for (i = 0; i < r.length; i++) {
               if ( isObj ){
                 found = 1;
                 for ( var n in prop ){
-                  if ( r[i][n] != prop[n] ){
+                  if ( !compare(r[i][n], prop[n]) ){
                     found = false;
                     break;
                   }
@@ -1206,7 +1254,7 @@
                   return i;
                 }
               }
-              else if (r[i][prop] && r[i][prop] == val) {
+              else if ( r[i][prop] && compare(r[i][prop], val) ) {
                 return i;
               }
             }
@@ -1533,10 +1581,14 @@
         return false;
       },
 
+      merge: function(){
+
+      },
+
       /* Onload functions: keep the var screen width and height up-to-date and binds history if enabled */
-      init: function() {
+      init: function(cfg){
         var o, p, parts;
-        if ( appui && (appui.env.path === undefined) ){
+        if ( appui && !appui.env.isInit ){
           appui.env.root = $("head base").length > 0 ? $("head base").attr("href") : appui.env.host;
           /* The server's path (difference between the host and the current dir */
           appui.env.path = appui.env.url.substr(appui.env.root.length);
@@ -1547,12 +1599,8 @@
               appui.env.params.push(v);
             }
           });
-          if (typeof (window.appui_cfg) === 'object') {
-            for (o in appui_cfg) {
-              for (p in appui_cfg[o]) {
-                appui[o][p] = appui_cfg[o][p];
-              }
-            }
+          if (typeof (cfg) === 'object') {
+            $.extend(true, window.appui, cfg);
           }
           for (o in appui) {
             for (p in appui[o]._defaults) {
@@ -1602,221 +1650,217 @@
               return false;
             };
           }
+          appui.env.isInit = true;
+        }
+        // Kendo adaptations
+        if ( window.kendo !== undefined ) {
+
+          var kendo = window.kendo,
+            ui = kendo.ui,
+            fn;
+
+          fn = kendo.ui.DropDownList.prototype.open;
+          kendo.ui.DropDownList.prototype.open = function () {
+            var res = fn.apply(this, arguments);
+            var w = this.list.width();
+            this.list.width("auto");
+            var w2 = this.list.width();
+            if (w2 < w) {
+              this.list.width(w);
+            }
+            return res;
+          };
+          fn = kendo.ui.ComboBox.prototype.open;
+          kendo.ui.ComboBox.prototype.open = function () {
+            var res = fn.apply(this, arguments);
+            var w = this.list.width();
+            this.list.width("auto");
+            var w2 = this.list.width();
+            if (w2 < w) {
+              this.list.width(w);
+            }
+            return res;
+          };
+
+          var dropDownTreeView = ui.Widget.extend({
+            _uid: null,
+            _selId: null,
+            _treeview: null,
+            _dropdown: null,
+
+            init: function(element, options) {
+              var that = this,
+                isInput = element.tagName.toLowerCase() === "input";
+
+              ui.Widget.fn.init.call(that, element, options);
+
+              that._uid = new Date().getTime();
+
+              var classes = $(element).attr("class");
+              var of = $(element).css("overflow");
+              var mh = $(element).css("max-height");
+              var of = $(element).css("overflow");
+              var w = $(element).width() - 24;
+              var additionalStyle = "";
+              var container = $(element);
+              if (of && mh) {
+                additionalStyle = kendo.format("max-height:{0};overflow:{1};", mh, of);
+              }
+              if ( w ){
+                additionalStyle += kendo.format("width:{0};", w);
+              }
+              if ( isInput ){
+                container = $(kendo.format('<div class="{0}" style="{1}"/>', classes, additionalStyle));
+                $(element).hide().after(container);
+              }
+              var treeID = 'extTreeView' + that._uid;
+              container.append(kendo.format("<input id='extDropDown{0}' class='k-ext-dropdown {1}'/>", that._uid, classes));
+              container.append(kendo.format("<div id='{0}' class='k-ext-treeview' style='z-index:1;{1}'/>", treeID, additionalStyle));
+
+              var $treeviewRootElem,
+                $dropdownRootElem,
+                ds = [];
+              if ( inputVal ){
+                ds.push({
+                  text: inputVal,
+                  value: inputVal
+                });
+              }
+
+              var ddCfg = {
+                dataSource: [],
+                dataTextField: "text",
+                dataValueField: "value",
+                open: function(e) {
+                  //to prevent the dropdown from opening or closing. A bug was found when clicking on the dropdown to
+                  //"close" it. The default dropdown was visible after the treeview had closed.
+                  e.preventDefault();
+                  // If the treeview is not visible, then make it visible.
+                  if (!$treeviewRootElem.hasClass("k-custom-visible")) {
+                    // Position the treeview so that it is below the dropdown.
+                    $treeviewRootElem.css({
+                      "top": $dropdownRootElem.position().top + $dropdownRootElem.height(),
+                      "left": $dropdownRootElem.position().left
+                    });
+                    // Display the treeview.
+                    $treeviewRootElem.slideToggle("fast", function() {
+                      that._dropdown.close();
+                      $treeviewRootElem.addClass("k-custom-visible");
+                    });
+                  }
+                  if (that._selId) {
+                    that._treeview.expandTo(that._selId);
+                    var ddVal = $dropdownRootElem.find("span.k-input").text();
+                    var selectedNode = that._treeview.findByText(ddVal);
+                    that._treeview.select(selectedNode);
+                  }
+                  var list = $("#" + treeID);
+                  var width = list.width();
+                  list.width("auto");
+                  var width2 = list.width();
+                  var width3 = $dropdownRootElem.width() + 22;
+                  if ( width3 > width2 ){
+                    list.width(width3);
+                  }
+                  else if ( width2 > width ){
+                    list.css({width: width2});
+                  }
+                  else {
+                    list.width(width);
+                  }
+                }
+              };
+              if ( options.optionLabel ){
+                ddCfg.optionLabel = options.optionLabel;
+              }
+              if ( options.change ){
+                ddCfg.change = options.change;
+              }
+              if ( options.select ){
+                ddCfg.select = options.select;
+              }
+
+              // Create the dropdown.
+              that._dropdown = $(kendo.format("#extDropDown{0}", that._uid)).kendoDropDownList(ddCfg).data("kendoDropDownList");
+
+              if (options.dropDownWidth) {
+                that._dropdown._inputWrapper.width(options.dropDownWidth);
+              }
+              else if ( w ){
+                that._dropdown._inputWrapper.css({width: w}).parent().css({width: w});
+              }
+
+              $dropdownRootElem = $(that._dropdown.element).closest("span.k-dropdown"); // Create the treeview.
+              that._treeview = $(kendo.format("#extTreeView{0}", that._uid)).kendoTreeView(options.treeview).data("kendoTreeView");
+              that._treeview.bind("select", function(e) {
+                appui.fn.log("SELECT", e);
+                // When a node is selected, display the text for the node in the dropdown and hide the treeview.
+                $dropdownRootElem.find("span.k-input").text($(e.node).children("div").text());
+                $treeviewRootElem.slideToggle("fast", function() {
+                  that._selId = $("#extTreeView" + that._uid).data("kendoTreeView").dataItem(e.node).id;
+                  $treeviewRootElem.removeClass("k-custom-visible");
+                  that.trigger("select", e);
+                });
+              });
+
+              $treeviewRootElem = $(that._treeview.element).closest("div.k-treeview"); // Hide the treeview.
+              $treeviewRootElem
+                .width($dropdownRootElem.width() - 2)
+                .css({
+                  "border": "1px solid #ccc",
+                  "display": "none",
+                  "position": "absolute",
+                  "background-color": that._dropdown.list.css("background-color")
+                });
+              var inputVal = that.element.val();
+              if ( inputVal ){
+                that.value(inputVal);
+              }
+              $(document).click(function(e) {
+                // Ignore clicks on the treetriew.
+                if ($(e.target).closest("div.k-treeview").length === 0) {
+                  // If visible, then close the treeview.
+                  if ($treeviewRootElem.hasClass("k-custom-visible")) {
+                    $treeviewRootElem.slideToggle("fast", function() {
+                      $treeviewRootElem.removeClass("k-custom-visible");
+                    });
+                  }
+                }
+              });
+            },
+
+            value: function (value) {
+              if (value !== undefined) {
+                var that = this,
+                  dataItem = that._treeview.dataSource.get(value),
+                  item = that._treeview.findByUid(dataItem.uid),
+                  $dropdownRootElem = $(that._dropdown.element).closest("span.k-dropdown");
+                that._dropdown.value(value);
+                $dropdownRootElem.find("span.k-input").text($(item).children("div").text());
+                that._selId = value;
+                return this.element.val(value);
+              }
+              else {
+                return this.element.val();
+              }
+            },
+
+            dropDownList: function() {
+              return this._dropdown;
+            },
+
+            treeview: function() {
+              return this._treeview;
+            },
+
+            options: {
+              name: "DropDownTreeView"
+            }
+          });
+          ui.plugin(dropDownTreeView);
+
         }
       }
     },
   };
-  $(function() {
-    appui.fn.init();
-
-    // Kendo adaptations
-    if ( window.kendo !== undefined ) {
-
-      var kendo = window.kendo,
-          ui = kendo.ui,
-          fn;
-
-      fn = kendo.ui.DropDownList.prototype.open;
-        kendo.ui.DropDownList.prototype.open = function () {
-          var res = fn.apply(this, arguments);
-          var w = this.list.width();
-          this.list.width("auto");
-          var w2 = this.list.width();
-          if (w2 < w) {
-            this.list.width(w);
-          }
-          return res;
-        };
-      fn = kendo.ui.ComboBox.prototype.open;
-      kendo.ui.ComboBox.prototype.open = function () {
-        var res = fn.apply(this, arguments);
-        var w = this.list.width();
-        this.list.width("auto");
-        var w2 = this.list.width();
-        if (w2 < w) {
-          this.list.width(w);
-        }
-        return res;
-      };
-
-      var dropDownTreeView = ui.Widget.extend({
-        _uid: null,
-        _selId: null,
-        _treeview: null,
-        _dropdown: null,
-
-        init: function(element, options) {
-          var that = this,
-              isInput = element.tagName.toLowerCase() === "input";
-
-          ui.Widget.fn.init.call(that, element, options);
-
-          that._uid = new Date().getTime();
-
-          var classes = $(element).attr("class");
-          var of = $(element).css("overflow");
-          var mh = $(element).css("max-height");
-          var of = $(element).css("overflow");
-          var w = $(element).width() - 24;
-          var additionalStyle = "";
-          var container = $(element);
-          if (of && mh) {
-            additionalStyle = kendo.format("max-height:{0};overflow:{1};", mh, of);
-          }
-          if ( w ){
-            additionalStyle += kendo.format("width:{0};", w);
-          }
-          if ( isInput ){
-            container = $(kendo.format('<div class="{0}" style="{1}"/>', classes, additionalStyle));
-            $(element).hide().after(container);
-          }
-          var treeID = 'extTreeView' + that._uid;
-          container.append(kendo.format("<input id='extDropDown{0}' class='k-ext-dropdown {1}'/>", that._uid, classes));
-          container.append(kendo.format("<div id='{0}' class='k-ext-treeview' style='z-index:1;{1}'/>", treeID, additionalStyle));
-
-          var $treeviewRootElem,
-              $dropdownRootElem,
-              ds = [];
-          if ( inputVal ){
-            ds.push({
-              text: inputVal,
-              value: inputVal
-            });
-          }
-
-          var ddCfg = {
-            dataSource: [],
-            dataTextField: "text",
-            dataValueField: "value",
-            open: function(e) {
-              //to prevent the dropdown from opening or closing. A bug was found when clicking on the dropdown to
-              //"close" it. The default dropdown was visible after the treeview had closed.
-              e.preventDefault();
-              // If the treeview is not visible, then make it visible.
-              if (!$treeviewRootElem.hasClass("k-custom-visible")) {
-                // Position the treeview so that it is below the dropdown.
-                $treeviewRootElem.css({
-                  "top": $dropdownRootElem.position().top + $dropdownRootElem.height(),
-                  "left": $dropdownRootElem.position().left
-                });
-                // Display the treeview.
-                $treeviewRootElem.slideToggle("fast", function() {
-                  that._dropdown.close();
-                  $treeviewRootElem.addClass("k-custom-visible");
-                });
-              }
-              if (that._selId) {
-                that._treeview.expandTo(that._selId);
-                var ddVal = $dropdownRootElem.find("span.k-input").text();
-                var selectedNode = that._treeview.findByText(ddVal);
-                that._treeview.select(selectedNode);
-              }
-              var list = $("#" + treeID);
-              var width = list.width();
-              list.width("auto");
-              var width2 = list.width();
-              var width3 = $dropdownRootElem.width() + 22;
-              if ( width3 > width2 ){
-                list.width(width3);
-              }
-              else if ( width2 > width ){
-                list.css({width: width2});
-              }
-              else {
-                list.width(width);
-              }
-            }
-          };
-          if ( options.optionLabel ){
-            ddCfg.optionLabel = options.optionLabel;
-          }
-          if ( options.change ){
-            ddCfg.change = options.change;
-          }
-          if ( options.select ){
-            ddCfg.select = options.select;
-          }
-
-          // Create the dropdown.
-          that._dropdown = $(kendo.format("#extDropDown{0}", that._uid)).kendoDropDownList(ddCfg).data("kendoDropDownList");
-
-          if (options.dropDownWidth) {
-            that._dropdown._inputWrapper.width(options.dropDownWidth);
-          }
-          else if ( w ){
-            that._dropdown._inputWrapper.css({width: w}).parent().css({width: w});
-          }
-
-          $dropdownRootElem = $(that._dropdown.element).closest("span.k-dropdown"); // Create the treeview.
-          that._treeview = $(kendo.format("#extTreeView{0}", that._uid)).kendoTreeView(options.treeview).data("kendoTreeView");
-          that._treeview.bind("select", function(e) {
-            appui.fn.log("SELECT", e);
-            // When a node is selected, display the text for the node in the dropdown and hide the treeview.
-            $dropdownRootElem.find("span.k-input").text($(e.node).children("div").text());
-            $treeviewRootElem.slideToggle("fast", function() {
-              that._selId = $("#extTreeView" + that._uid).data("kendoTreeView").dataItem(e.node).id;
-              $treeviewRootElem.removeClass("k-custom-visible");
-              that.trigger("select", e);
-            });
-          });
-
-          $treeviewRootElem = $(that._treeview.element).closest("div.k-treeview"); // Hide the treeview.
-          $treeviewRootElem
-            .width($dropdownRootElem.width() - 2)
-            .css({
-              "border": "1px solid #ccc",
-              "display": "none",
-              "position": "absolute",
-              "background-color": that._dropdown.list.css("background-color")
-            });
-          var inputVal = that.element.val();
-          appui.fn.log("VALUE2", inputVal);
-          if ( inputVal ){
-            that.value(inputVal);
-          }
-          $(document).click(function(e) {
-            // Ignore clicks on the treetriew.
-            if ($(e.target).closest("div.k-treeview").length === 0) {
-              // If visible, then close the treeview.
-              if ($treeviewRootElem.hasClass("k-custom-visible")) {
-                $treeviewRootElem.slideToggle("fast", function() {
-                  $treeviewRootElem.removeClass("k-custom-visible");
-                });
-              }
-            }
-          });
-        },
-
-        value: function (value) {
-          if (value !== undefined) {
-            var that = this,
-                dataItem = that._treeview.dataSource.get(value),
-                item = that._treeview.findByUid(dataItem.uid),
-                $dropdownRootElem = $(that._dropdown.element).closest("span.k-dropdown");
-            that._dropdown.value(value);
-            $dropdownRootElem.find("span.k-input").text($(item).children("div").text());
-            that._selId = value;
-            return this.element.val(value);
-          }
-          else {
-            return this.element.val();
-          }
-        },
-
-        dropDownList: function() {
-          return this._dropdown;
-        },
-
-        treeview: function() {
-          return this._treeview;
-        },
-
-        options: {
-          name: "DropDownTreeView"
-        }
-      });
-      ui.plugin(dropDownTreeView);
-
-    }
-  });
 })(jQuery);

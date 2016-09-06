@@ -1,17 +1,17 @@
+@black: #454545;
+@orange: #FF9900;
+@red: #FFF0F0;
+@green: #F0FFF0;
+@blue: #F0FFFF;
+@yellow: #FFFFCC;
+@white: #FDFDFD;
 a{
   outline-style: none;
   text-decoration: none;
+  color: inherit !important;
 }
 table td{
   vertical-align:top
-}
-.appui-red,
-.appui-red a{
-  color:#F00 !important;
-}
-.appui-green,
-.appui-green a{
-  color:#6C0 !important;
 }
 .appui-no-reset{
   font-size:1em;
@@ -142,9 +142,11 @@ iframe.appui-hidden{
   vertical-align:top;
   background-image:none;
   border-color: inherit;
-  border: 2px solid;
+  border-width: 2px;
+  border-style: solid;
   margin: 1em;
   padding: 1em;
+  box-sizing: border-box !important;
   /* Attempt for nesting forms */
   .appui-section{
     border-style:dashed;
@@ -157,12 +159,12 @@ iframe.appui-hidden{
     height:2px !important;
     margin: 1em;
   }
-}
-.appui-section legend,.appui-legend{
-  font-weight:bold;
-  font-size:1.2em;
-  padding:0 1em;
-  cursor:pointer;
+  legend,.appui-legend{
+    font-weight:bold;
+    font-size:1.2em;
+    padding:0 1em;
+    cursor:pointer;
+  }
 }
 .appui-spacer{
   display:block;
@@ -206,6 +208,12 @@ iframe.appui-hidden{
   margin-top: 0!important;
   margin-bottom: 0!important;
 }
+.appui-full-width{
+  .appui-block;
+}
+.appui-full-height{
+  display: block
+}
 .appui-form-full{
   .appui-block;
   .appui-w-100;
@@ -244,4 +252,117 @@ input.appui-form-label{
     height: auto;
     vertical-align: top;
   }
+}
+.appui-notification{
+  font-size: small;
+  text-align: left;
+  padding: 0 2em;
+  .appui-notification-icon{
+    font-size: 24px;
+    line-height: 24px;
+    margin-right: 10px;
+  }
+  /** loader */
+  .loader {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-color: inherit;
+    border-width: 4px;
+    border-style: solid;
+    top: 50%;
+    animation: loader 4s infinite ease;
+    margin-right: 15px;
+  }
+  .loader-inner {
+    vertical-align: top;
+    display: inline-block;
+    width: 100%;
+    background-color: #FBFBFB;
+    animation: loader-inner 4s infinite ease-in;
+  }
+}
+@keyframes loader {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(180deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  75% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes loader-inner {
+  0% {
+    height: 0%;
+  }
+  25% {
+    height: 0%;
+  }
+  50% {
+    height: 100%;
+  }
+  75% {
+    height: 100%;
+  }
+  100% {
+    height: 0%;
+  }
+}
+.appui-black{
+  color: @black;
+}
+.appui-white{
+  color: @white;
+}
+.appui-blue{
+  color: darken(@blue, 60%) !important;
+}
+.appui-red{
+  color: @red;
+}
+.appui-green{
+  color: @green;
+}
+.appui-orange{
+  color: @orange;
+}
+.appui-yellow{
+  color: @yellow;
+}
+
+.appui-bg-black{
+  background-color: @black !important;
+  color: @white;
+}
+.appui-bg-white{
+  background-color: @white !important;;
+  color: @black;
+}
+.appui-bg-blue{
+  background-color: darken(@blue, 60%) !important;
+  color: @white;
+}
+.appui-bg-red{
+  background-color: darken(@red, 60%) !important;
+  color: @white;
+}
+.appui-bg-green{
+  background-color: darken(@green, 60%) !important;
+  color: @white;
+}
+.appui-bg-orange{
+  background-color: darken(@orange, 60%) !important;
+  color: @white;
+}
+.appui-bg-yellow{
+  background-color: darken(@yellow, 60%) !important;
+  color: @white;
 }
