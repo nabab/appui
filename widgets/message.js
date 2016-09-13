@@ -111,7 +111,7 @@
           closeOnClick: false,
           onBeforeHide: function(){
             isShown = false;
-            appui.fn.log($(".appui-notification:visible").length, $(".appui-notification:visible").data("appui-data"));
+            //appui.fn.log($(".appui-notification:visible").length, $(".appui-notification:visible").data("appui-data"));
             if ( cfg.onClose ){
               cfg.onClose(cfg.data ? cfg.data : []);
             }

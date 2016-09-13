@@ -28,7 +28,7 @@
     var getFromID = function(id){
       if ( widget ){
         return widget.getNotifications().filter(function(){
-          appui.fn.log("COMPARE", $(this).data("appui-id"), id);
+          //appui.fn.log("COMPARE", $(this).data("appui-id"), id);
           return $(this).data("appui-id") === id;
         }).first();
       }
@@ -38,7 +38,7 @@
     var deleteFromID = function(id){
       var $ele = getFromID(id),
           $close = $ele.find(".appui-notification-close:visible");
-      appui.fn.log(id, $ele, close);
+      //appui.fn.log(id, $ele, close);
       if ( $close.length ){
         $close.click();
       }

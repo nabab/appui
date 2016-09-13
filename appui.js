@@ -15,6 +15,8 @@
   /*global window */
   /*global jQuery */
   /*global appui */
+
+  $.migrateMute = true;
   if ( $.fn.reverse === undefined ){
     $.fn.reverse = [].reverse;//save a new function from Array.reverse
   }
@@ -159,6 +161,7 @@
         lang: 'en',
         ele: $(document.body),
       },
+      version: "0.2",
       host: window.location.protocol + '//' + window.location.hostname,
       url: window.location.href,
       old_path: null,
@@ -337,10 +340,9 @@
           num = 1;
         }
         var i = $.inArray(param, appui.env.params),
-            res = '',
-            a;
+            res = '';
         if (i > -1) {
-          for ( a = 1; a <= num; a++ ) {
+          for ( var a = 1; a <= num; a++ ) {
             if (appui.env.params[i + a]) {
               if (res !== '') {
                 res += '/';
@@ -597,7 +599,7 @@
         else {
           $d.append(msg)
             .dialog({
-            width: Math.round($window.width() * 0.4),
+            width: Math.round(appui.env.width * 0.4),
             resizable: options.resizable !== undefined ? options.resizable : true,
             stack: false,
             modal: options.modal !== undefined ? options.modal : true,
@@ -1167,7 +1169,7 @@
 
   // Logging function
       log: function() {
-        if (appui.env.logging && window.console !== undefined) {
+        if ( (!appui.env.isInit || appui.env.logging) && window.console !== undefined) {
           var args = arguments,
               i = 0;
           while (i < args.length) {
@@ -1505,6 +1507,12 @@
         }
       },
 
+      resize: function(){
+        appui.env.width = $window.width();
+        appui.env.height = $window.height();
+        appui.fn.defaultResizeFunction();
+      },
+
       md5: function(st){
         return md5.md5(st);
       },
@@ -1589,6 +1597,8 @@
       init: function(cfg){
         var o, p, parts;
         if ( appui && !appui.env.isInit ){
+          appui.env.width = $window.width();
+          appui.env.height = $window.height();
           appui.env.root = $("head base").length > 0 ? $("head base").attr("href") : appui.env.host;
           /* The server's path (difference between the host and the current dir */
           appui.env.path = appui.env.url.substr(appui.env.root.length);
@@ -1626,9 +1636,7 @@
           });
 
           $window.resize(function() {
-            appui.env.width = $window.width();
-            appui.env.height = $window.height();
-            appui.fn.defaultResizeFunction();
+            appui.fn.resize();
           });
 
           if (appui.fn.history) {
@@ -1793,7 +1801,7 @@
               $dropdownRootElem = $(that._dropdown.element).closest("span.k-dropdown"); // Create the treeview.
               that._treeview = $(kendo.format("#extTreeView{0}", that._uid)).kendoTreeView(options.treeview).data("kendoTreeView");
               that._treeview.bind("select", function(e) {
-                appui.fn.log("SELECT", e);
+                //appui.fn.log("SELECT", e);
                 // When a node is selected, display the text for the node in the dropdown and hide the treeview.
                 $dropdownRootElem.find("span.k-input").text($(e.node).children("div").text());
                 $treeviewRootElem.slideToggle("fast", function() {
