@@ -202,11 +202,12 @@
     };
 
     setInterval(function(){
+      appui.fn.log("setInterval", todo, isShown);
       if ( todo._num && !isShown ){
         for ( var n in todo ){
           if ( (n.indexOf('_') !== 0) && todo[n].items.length ){
             $.each(todo[n].items, function(i, v){
-              appui.app.notification.show(v);
+              appui.app.message.show(v, v.type);
             });
             delete todo[n];
             todo._num--;

@@ -107,7 +107,7 @@
         var cfg = appui.app.notification.cfg;
         return '<div class="appui-notification k-notification-wrap ' +
           '">' +
-          ( type && cfg[type] ? '<button class="appui-notification-close k-i-close k-button" title="' + appui.lng.close + '"><i class="fa fa-times"> </i></button>' : '' ) +
+          ( type && cfg[type] ? '<div class="appui-notification-close k-i-close k-button" title="' + appui.lng.close + '"><i class="fa fa-times"> </i></div>' : '' ) +
           ( type && cfg[type] ? '<i class="appui-notification-icon fa fa-' + cfg[type].icon + '"> </i>' : '<span class="appui-notification-icon loader"><span class="loader-inner"></span></span> ' ) +
           ( obj.title ? '<span class="appui-b">' + obj.title + '</span><hr>' : '' ) +
           ( obj.content ? obj.content : ( obj.text ? obj.text : appui.lng.loading ) ) +
@@ -117,6 +117,12 @@
     },
     success: function (obj, timeout) {
       return this.show(obj, "success", timeout ? timeout : 2000);
+    },
+    error: function (obj, timeout) {
+      return this.show(obj, "error", timeout ? timeout : 5000);
+    },
+    warning: function (obj, timeout) {
+      return this.show(obj, "warning");
     },
     show: function (obj, type, timeout) {
       this._init();
@@ -136,6 +142,9 @@
       else {
         this.widget.show({content: appui.lng.loading}, "loading");
       }
+    },
+    info: function(obj, timeout){
+      return this.show(obj, "info", timeout);
     },
     setID: function (id) {
       if (!id) {
