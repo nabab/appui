@@ -26,32 +26,28 @@
       _cat: {}
     },
     lng: {
-      _defaults: {
-        /* User-defined languages elements */
-        select_unselect_all: "Select/Clear all",
-        search: 'Search',
-        loading: 'Loading...',
-        choose: 'Choose',
-        error: 'Error',
-        server_response: 'Server response',
-        reload: 'Reload',
-        errorText: 'Something went wrong',
-        closeAll: "Close all",
-        closeOthers: "Close others",
-        pin: "Pin",
-        unpin: "Unpin",
-        yes: "Yes",
-        no: "No",
-        untitled: "Untitled"
-      }
+      /* User-defined languages elements */
+      select_unselect_all: "Select/Clear all",
+      search: 'Search',
+      loading: 'Loading...',
+      choose: 'Choose',
+      error: 'Error',
+      server_response: 'Server response',
+      reload: 'Reload',
+      errorText: 'Something went wrong',
+      closeAll: "Close all",
+      closeOthers: "Close others",
+      pin: "Pin",
+      unpin: "Unpin",
+      yes: "Yes",
+      no: "No",
+      untitled: "Untitled"
     },
     var: {
-      _defaults: {
-        /* Usable datatypes through jQuery Ajax function */
-        datatypes: ['xml', 'html', 'script', 'json', 'jsonp', 'text'],
-        /* The default value used by the function shorten */
-        shortenLen: 30,
-      },
+      /* Usable datatypes through jQuery Ajax function */
+      datatypes: ['xml', 'html', 'script', 'json', 'jsonp', 'text'],
+      /* The default value used by the function shorten */
+      shortenLen: 30,
       /* Categorizing keyboard map */
       keys: {
         upDown: [33, 34, 35, 36, 38, 40],
@@ -151,16 +147,14 @@
       ]
     },
     env: {
-      _defaults: {
-        siteTitle: $("head title").text(),
-        /* This variable should be set to true in debugging mode only */
-        logging: false,
-        /* Address of the CDN (where this file should be hosted) */
-        cdn: 'http://cdn.app-ui.com/',
-        /* Default language */
-        lang: 'en',
-        ele: $(document.body),
-      },
+      siteTitle: $("head title").text(),
+      /* This variable should be set to true in debugging mode only */
+      logging: false,
+      /* Address of the CDN (where this file should be hosted) */
+      cdn: 'http://cdn.app-ui.com/',
+      /* Default language */
+      lang: 'en',
+      ele: $(document.body),
       version: "0.2",
       host: window.location.protocol + '//' + window.location.hostname,
       url: window.location.href,
@@ -188,93 +182,91 @@
     },
     events: {},
     fn: {
-      _defaults: {
-        money: function(m){
-          if ( window.kendo !== undefined ) {
-            return kendo.toString(parseInt(m), "n0");
-          }
-          else{
-
-          }
-        },
-
-        fdate: function(d, wrong_result){
-          var r;
-          if ( (typeof(d) === 'string') && (d.length > 5) && (d.substring(d.length-5, d.length-4) === '.') ){
-            d = Math.floor(d);
-          }
-          if ( (typeof(d) === 'number') && (d > 0) ){
-            if ( d < 10000000000 ){
-              d = d*1000;
-            }
-            r = new Date(d);
-          }
-          else if ( window.kendo !== undefined ) {
-            try {
-              r = kendo.parseDate(d);
-            }
-            catch (err) {
-              r = d;
-            }
-          }
-          else{
-
-          }
-          if ( !r ){
-            return wrong_result && !$.isNumeric(wrong_result) ? wrong_result : '';
-          }
-          if ( wrong_result === 1 ){
-            return
-          }
-          if ( r.isSame && r.isSame(new Date()) ){
-            r = kendo.toString(r, 'H:mm');
-            if ( r === '0:00' ){
-              r = "Aujourd'hui";
-            }
-            return r;
-          }
-          else{
-            return kendo.toString(r, 'd');
-          }
-        },
-
-        /* Predefined callback functions for appui.fn.link function */
-        ajaxErrorFunction: function(jqXHR, textStatus, errorThrown) {
-          //appui.fn.log(r);
-          return true;
-        },
-        defaultPreLinkFunction: function(r, ele) {
-          //appui.fn.log(r);
-          return true;
-        },
-        defaultLinkFunction: function(r, ele) {
-          //appui.fn.log(r);
-          return true;
-        },
-        defaultPostLinkFunction: function(r) {
-          //appui.fn.log(r);
-          return true;
-        },
-        startLoadingFunction: function(r) {
-          //appui.fn.log(r);
-          return true;
-        },
-        endLoadingFunction: function(end) {
-          //appui.fn.log(r);
-          return true;
-        },
-        defaultHistoryFunction: function(url, title, data) {
-          //appui.fn.log(r);
-          return true;
-        },
-        defaultResizeFunction: function() {
-          //appui.fn.log(r);
-          return true;
-        },
-        defaultAlertFunction: function() {
-          //appui.fn.log(r);
-          return true;
+      money: function(m){
+        if ( window.kendo !== undefined ) {
+          return kendo.toString(parseInt(m), "n0");
         }
+        else{
+
+        }
+      },
+
+      fdate: function(d, wrong_result){
+        var r;
+        if ( (typeof(d) === 'string') && (d.length > 5) && (d.substring(d.length-5, d.length-4) === '.') ){
+          d = Math.floor(d);
+        }
+        if ( (typeof(d) === 'number') && (d > 0) ){
+          if ( d < 10000000000 ){
+            d = d*1000;
+          }
+          r = new Date(d);
+        }
+        else if ( window.kendo !== undefined ) {
+          try {
+            r = kendo.parseDate(d);
+          }
+          catch (err) {
+            r = d;
+          }
+        }
+        else{
+
+        }
+        if ( !r ){
+          return wrong_result && !$.isNumeric(wrong_result) ? wrong_result : '';
+        }
+        if ( wrong_result === 1 ){
+          return
+        }
+        if ( r.isSame && r.isSame(new Date()) ){
+          r = kendo.toString(r, 'H:mm');
+          if ( r === '0:00' ){
+            r = "Aujourd'hui";
+          }
+          return r;
+        }
+        else{
+          return kendo.toString(r, 'd');
+        }
+      },
+
+      /* Predefined callback functions for appui.fn.link function */
+      ajaxErrorFunction: function(jqXHR, textStatus, errorThrown) {
+        //appui.fn.log(r);
+        return true;
+      },
+      defaultPreLinkFunction: function(r, ele) {
+        //appui.fn.log(r);
+        return true;
+      },
+      defaultLinkFunction: function(r, ele) {
+        //appui.fn.log(r);
+        return true;
+      },
+      defaultPostLinkFunction: function(r) {
+        //appui.fn.log(r);
+        return true;
+      },
+      startLoadingFunction: function(r) {
+        //appui.fn.log(r);
+        return true;
+      },
+      endLoadingFunction: function(end) {
+        //appui.fn.log(r);
+        return true;
+      },
+      defaultHistoryFunction: function(url, title, data) {
+        //appui.fn.log(r);
+        return true;
+      },
+      defaultResizeFunction: function() {
+        //appui.fn.log(r);
+        return true;
+      },
+      defaultAlertFunction: function() {
+        //appui.fn.log(r);
+        return true;
       },
       /* The History object if history has been loaded */
       history: window.History === undefined ? false : window.History,
@@ -1161,9 +1153,6 @@
         else if ( appui.env.isInit ){
           $.extend(appui[namespace], obj);
         }
-        else if ( appui[namespace]._defaults ){
-          $.extend(appui[namespace]._defaults, obj);
-        }
       },
 
 
@@ -1611,13 +1600,6 @@
           });
           if (typeof (cfg) === 'object') {
             $.extend(true, window.appui, cfg);
-          }
-          for (o in appui) {
-            for (p in appui[o]._defaults) {
-              if (appui[o][p] === undefined) {
-                appui[o][p] = appui[o]._defaults[p];
-              }
-            }
           }
           $(window.document).on("focus", "*", function(e){
             appui.env.focused = $(e.target);

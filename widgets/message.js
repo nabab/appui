@@ -202,7 +202,6 @@
     };
 
     setInterval(function(){
-      appui.fn.log("setInterval", todo, isShown);
       if ( todo._num && !isShown ){
         for ( var n in todo ){
           if ( (n.indexOf('_') !== 0) && todo[n].items.length ){
