@@ -1302,6 +1302,9 @@
         var $form = $(form),
             url = $form.attr("action") || appui.env.path,
             data;
+        if ( url === '' ){
+          url = '.';
+        }
         if ( (typeof(url) === 'string') && (url.indexOf("http") !== 0 || url.indexOf(window.document.location.hostname) !== -1) && !$form.is("[target]") ){
           if ( e ){
             e.preventDefault();
