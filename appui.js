@@ -38,6 +38,7 @@
       closeAll: "Close all",
       closeOthers: "Close others",
       pin: "Pin",
+      arrange: "Arrange",
       unpin: "Unpin",
       yes: "Yes",
       no: "No",
@@ -174,6 +175,7 @@
       /* appui.env.loaders is an array of MD5 of data and url preventing the same call to be made at the same time */
       loaders: [],
       /* appui.env.params is an array of each element of the path */
+      resizeTimer: false,
       params: [],
       isInit: false
     },
@@ -1499,10 +1501,19 @@
         }
       },
 
-      resize: function(){
+      resize: function(stop){
         appui.env.width = $window.width();
         appui.env.height = $window.height();
-        appui.fn.defaultResizeFunction();
+        if ( appui.env.resizeTimer ){
+          clearTimeout(appui.env.resizeTimer);
+        }
+        if ( !stop ){
+          appui.env.resizeTimer = setTimeout(function(){
+            appui.env.width = $window.width();
+            appui.env.height = $window.height();
+            appui.fn.defaultResizeFunction();
+          }, 20);
+        }
       },
 
       md5: function(st){

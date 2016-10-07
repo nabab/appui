@@ -1,9 +1,9 @@
-appui.lng._defaults = {
+$.extend(appui.lng, {
   /* User-defined languages elements */
   loading: 'Loading...',
-    choose: 'Choose',
-    error: 'Error',
-    server_response: 'Server response',
-    reload: 'Reload',
-    errorText: 'Something went wrong'
-};
+  choose: 'Choose',
+  error: 'Error',
+  server_response: 'Server response',
+  reload: 'Reload',
+  errorText: 'Something went wrong'
+});

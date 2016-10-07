@@ -26,101 +26,113 @@ table td{
   }
 }
 .appui-w-100{
-  width: 100% !important;
+  width: 100%;
+  box-sizing: border-box !important;
 }
 .appui-w-75{
-  width: 75% !important;;
+  width: 75%;
+  box-sizing: border-box !important;
 }
 .appui-w-66{
-  width: 66.66% !important;;
+  width: 66.66%;
+  box-sizing: border-box !important;
 }
 .appui-w-50{
-  width: 50% !important;;
+  width: 50%;
+  box-sizing: border-box !important;
 }
 .appui-w-33{
-  width: 33.33% !important;;
+  width: 33.33%;
+  box-sizing: border-box !important;
 }
 .appui-w-25{
-  width: 25% !important;;
+  width: 25%;
+  box-sizing: border-box !important;
 }
 .appui-h-100{
-  height: 100% !important;;
+  height: 100%;
+  box-sizing: border-box !important;
 }
 .appui-h-75{
-  height: 75% !important;;
+  height: 75%;
+  box-sizing: border-box !important;
 }
 .appui-h-66{
-  height: 66.66% !important;;
+  height: 66.66%;
+  box-sizing: border-box !important;
 }
 .appui-h-50{
-  height: 50% !important;;
+  height: 50%;
+  box-sizing: border-box !important;
 }
 .appui-h-33{
-  height: 33.33% !important;;
+  height: 33.33%;
+  box-sizing: border-box !important;
 }
 .appui-h-25{
-  height: 25% !important;;
+  height: 25%;
+  box-sizing: border-box !important;
 }
 .appui-xl,
 .appui-xlarge{
-  font-size: 1.7em !important;
+  font-size: 1.7em;
 }
 .appui-lg,
 .appui-large{
-  font-size: 1.4em !important;
+  font-size: 1.4em;
 }
 .appui-s,
 .appui-small{
-  font-size: 0.8em !important;
+  font-size: 0.8em;
 }
 .appui-xs,
 .appui-xsmall{
-  font-size: 0.6em !important;
+  font-size: 0.6em;
 }
 /* hidden */
 .appui-h,
 .appui-hidden{
-  display:none !important;
+  display:none;
 }
 /* centered */
 .appui-c,
 .appui-centered{
-  text-align:center !important;
+  text-align:center;
 }
 /* justified */
 .appui-j,
 .appui-justified{
-  text-align:justify !important;
+  text-align:justify;
 }
 /* left */
 .appui-l,
 .appui-left{
-  text-align:left !important;
+  text-align:left;
 }
 /* right */
 .appui-r,
 .appui-right{
-  text-align:right !important;
+  text-align:right;
 }
 /* mouse pointer */
 .appui-p,
 .appui-pointer{
-  cursor:pointer !important;
+  cursor:pointer;
 }
 /* bold */
 .appui-b,
 .appui-bold{
-  font-weight:bold !important;
+  font-weight:bold;
 }
 /* italic */
 .appui-i,
 .appui-italic{
-  font-style:italic !important;
+  font-style:italic;
 }
 /* underlined */
 .appui-u,
 .appui-underlined{
-  text-decoration:underline !important;
+  text-decoration:underline;
 }
 /* no border */
 .appui-o,
@@ -181,24 +193,24 @@ iframe.appui-hidden{
   background-color:inherit;
 }
 .appui-hpadded{
-  padding-left: 1em;
-  padding-right: 1em;
+  padding-left: 2em;
+  padding-right: 2em;
 }
 .appui-vpadded{
-  padding-top: 1em;
-  padding-bottom: 1em;
+  padding-top: 2em;
+  padding-bottom: 2em;
 }
 .appui-padded{
   .appui-hpadded;
   .appui-vpadded;
 }
 .appui-hmargin{
-  margin-left: 1em;
-  margin-right: 1em;
+  margin-left: 2em;
+  margin-right: 2em;
 }
 .appui-vmargin{
-  margin-top: 1em;
-  margin-bottom: 1em;
+  margin-top: 2em;
+  margin-bottom: 2em;
 }
 .appui-margin{
   .appui-hmargin;
@@ -381,7 +393,7 @@ input.appui-form-label{
   color: @white;
 }
 .appui-bg-white{
-  background-color: @white !important;;
+  background-color: @white !important;
   color: @black;
 }
 .appui-bg-blue{
@@ -403,4 +415,63 @@ input.appui-form-label{
 .appui-bg-yellow{
   background-color: darken(@yellow, 60%) !important;
   color: @white;
+}
+div.appui-widget{
+  word-wrap: break-word;
+  margin: 0.25%;
+  ul, li{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow: auto;
+  }
+  li{
+    padding: 0.4em 0.6em;
+    span:nth-child(even){
+      float: right;
+      clear: right;
+      text-align: right;
+    }
+    span:nth-child(odd){
+      float: left;
+      clear: left;
+    }
+    div.dropdownstats{
+      float: left;
+      clear: both;
+      width: 90%;
+      margin: 10px 6% 5px 4%;
+      span{
+        float: none;
+      }
+    }
+  }
+  div.k-header{
+    text-align: center;
+    margin-bottom: 2px;
+    i.fa{
+      font-size: large;
+      cursor: pointer;
+    }
+    i.apst-toggler{
+      position: absolute;
+      top: 3px;
+      left: 5px;
+    }
+    div{
+      position: absolute;
+      right: 5px;
+      top: 3px
+    }
+    span:nth-child(odd){
+      float: right;
+      clear: right;
+      text-align: right;
+    }
+    span:nth-child(even){
+      padding-left: 30px;
+      float: left;
+      clear: left;
+    }
+  }
 }
