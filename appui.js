@@ -1475,7 +1475,7 @@
           }
         }
         setTimeout(function(){
-          appui.fn.defaultResizeFunction();
+          appui.fn.resize();
         }, 200);
       },
 
@@ -1502,11 +1502,11 @@
       },
 
       resize: function(stop){
-        appui.env.width = $window.width();
-        appui.env.height = $window.height();
         if ( appui.env.resizeTimer ){
           clearTimeout(appui.env.resizeTimer);
         }
+        appui.env.width = $window.width();
+        appui.env.height = $window.height();
         if ( !stop ){
           appui.env.resizeTimer = setTimeout(function(){
             appui.env.width = $window.width();
