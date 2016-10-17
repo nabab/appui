@@ -492,7 +492,7 @@
             msg = arguments[i];
             has_msg = 1;
           }
-          else if ( appui.fn.isDimension(arguments[i]) ){
+          else if ( appui.fn.isDimension(arguments[i]) || (arguments[i] === 'auto') ){
             if ( has_width ){
               height = arguments[i];
             }
@@ -526,7 +526,7 @@
         if (!height) {
           height = false;
         }
-        $d = $('<div class="appui-logger">').appendTo($(window.document.body));
+        $d = $('<div class="appui-logger">').appendTo(document.body);
         if ( callbackOpen ){
           $d.data("appui_callbackOpen", callbackOpen);
         }
@@ -566,13 +566,10 @@
               "Maximize",
               "Close"
             ],
-            activate: function(){
-              this.center();
-            },
             resize: function() {
               if ( $.fn.redraw !== undefined ) {
                 $d.redraw();
-                this.center();
+                this.refresh();
               }
             },
             refresh: function() {
@@ -581,18 +578,21 @@
             deactivate: function() {
               this.destroy();
             },
+            open: function() {
+              this.center();
+            },
             close: function() {
               return onClose($d);
             }
           };
           if ( height ){
+            appui.fn.log(height);
             cfg.height = height;
           }
-          $d.html(msg).kendoWindow(cfg);
+          $d.html(msg).kendoWindow(cfg).data("kendoWindow");
         }
         else {
-          $d.append(msg)
-            .dialog({
+          $d.append(msg).dialog({
             width: Math.round(appui.env.width * 0.4),
             resizable: options.resizable !== undefined ? options.resizable : true,
             stack: false,
@@ -976,35 +976,48 @@
         return true;
       },
 
-      window: function(url, data, w, h, fn){
-        if ( !w && $.isFunction(w) ){
-          fn = w;
-        }
-        else if ( !h && $.isFunction(h) ){
-          fn = h;
-        }
-        appui.fn.post(url, data, function(d){
-          var type = typeof(d);
-          if ( type === 'string' ){
-            appui.fn.alert(d, "Returned...", w ? w : "auto", h ? h : "auto", function(ele){
-              if ($.isFunction(fn) ){
-                if ( eval(fn(ele)) ){
-                  appui.fn.callback(url, {}, false, false, ele);
+      window: function(url){
+        var data = {},
+            w,
+            h,
+            fn,
+            type;
+        $.each(arguments, function(i, v){
+          if ( i > 0 ){
+            if ( $.isFunction(v) ){
+              fn = v;
+            }
+            else{
+              type = (typeof(v)).toLowerCase();
+              if ( type === 'object' ){
+                data = v;
+              }
+              else if ( (type === 'string') || (type === 'number') ){
+                if ( !w ){
+                  w = v;
+                }
+                else if ( !h ){
+                  h = v;
                 }
               }
-              else{
-                appui.fn.callback(url, {}, false, false, ele);
+            }
+          }
+        });
+        appui.fn.post(url, data, function(d){
+          var type2 = (typeof(d)).toLowerCase();
+          if ( type2 === 'string' ){
+            appui.fn.alert(d, "Returned...", w ? w : "auto", h ? h : "auto", function(ele){
+              appui.fn.callback(url, d, false, false, ele);
+              if ($.isFunction(fn) ){
+                eval(fn(ele));
               }
             });
           }
-          if ((type.toLowerCase() === 'object') && d.content){
+          if ( (type2 === 'object') && d.content){
             appui.fn.alert(d.content, d.title ? d.title : ' ', w ? w : "auto", h ? h : "auto", function(ele){
+              appui.fn.callback(url, d, false, false, ele);
               if ($.isFunction(fn) ){
-                eval(fn(ele, d));
-                appui.fn.callback(url, d, false, false, ele);
-              }
-              else{
-                appui.fn.callback(url, d, false, false, ele);
+                eval(fn(ele));
               }
             });
           }
@@ -1292,6 +1305,17 @@
         }
         return r;
       },
+      
+      countProperties(obj){
+        if ( (typeof(obj)).toLowerCase() === 'object' ){
+          var i = 0;
+          for ( var n in obj ){
+            i++;
+          }
+          return i;
+        }
+        return false;
+      },
 
       cancel: function(form, e){
       },
@@ -1346,49 +1370,46 @@
             });
         return res;
       },
+      
+      fieldValue: function(field){
+        var $f = $(field),
+            v;
+        if ( $f.is(":checkbox") ){
+          if ( $f.is(":checked") ){
+            v = $f.val();
+            if ( !v ){
+              v = 1;
+            }
+          }
+          else{
+            v = 0;
+          }
+        }
+        else if ( $f.is(":radio") ){
+          if ( $f.is(":checked") ){
+            v = $f.val();
+          }
+        }
+        else{
+          v = $f.val();
+        }
+        return v;
+      },
 
       formdata: function(form){
         var $f = $(form),
             // inputs with a name
-            $inputs = $f.find("input,select,textarea").filter("[name]"),
-            //num_changes = $inputs.length,
+            $inputs = $f.find(":input").filter("[name]"),
+            num_changes = 0,
             $$,
             res = {},
             n,
             v,
-            forget,
-            has_original = null;
+            forget;
         $inputs.each(function(j){
           $$ = $(this);
-          forget = false
-          if ( (this.tagName.toLowerCase() === 'input') &&
-              (this.type === 'checkbox') &&
-              !$$.is(":checked") ){
-            v = "0";
-          }
-          else if ( (this.tagName.toLowerCase() === 'input') &&
-                   (this.type === 'radio') ){
-            if ( $$.is(":checked") ){
-              v = $$.val();
-            }
-            else{
-              forget = 1;
-            }
-          }
-          else{
-            v = $$.val();
-          }
-          if ( has_original === null ){
-            has_original = ($$.data("appuiOriginalValue") !== undefined);
-          }
-          /*
-             if ( has_original ){
-             if ( $$.data("appuiOriginalValue") == v ){
-             num_changes--;
-             }
-             }
-             */
-          if ( !forget && !$$.is(":disabled") ){
+          v = appui.fn.fieldValue(this);
+          if ( (v !== undefined) && !$$.is(":disabled") ){
             var name = this.name;
             if (
               (name.indexOf("[]") === -1) &&
@@ -1432,6 +1453,27 @@
         });
         // return num_changes ? res : false;
         return res;
+      },
+      
+      formChanges: function(form){
+        var $f = $(form),
+            // inputs with a name
+            $inputs = $f.find(":input").filter("[name]"),
+            data = appui.fn.formdata(form),
+            changes = {},
+            v,
+            name;
+        $inputs.each(function(){
+          name = this.name;
+          v = $(this).data("appuiOriginalValue");
+          if ( (v !== undefined) && (data[name] !== undefined) && (data[name] !== v) ){
+            changes[name] = {
+              value: data[name],
+              oldValue: v
+            };
+          }
+        });
+        return changes;
       },
 
       // http://stackoverflow.com/questions/3900701/onclick-go-full-screen
