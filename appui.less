@@ -8,7 +8,7 @@
 a{
   outline-style: none;
   text-decoration: none;
-  //color: inherit !important;
+  //color: inherit;
 }
 table td{
   vertical-align:top
@@ -27,51 +27,59 @@ table td{
 }
 .appui-w-100{
   width: 100%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-w-75{
   width: 75%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-w-66{
   width: 66.66%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-w-50{
   width: 50%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-w-33{
   width: 33.33%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-w-25{
   width: 25%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-h-100{
   height: 100%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-h-75{
   height: 75%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-h-66{
   height: 66.66%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-h-50{
   height: 50%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-h-33{
   height: 33.33%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 .appui-h-25{
   height: 25%;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
+}
+.appui-xxxl,
+.appui-xxxlarge{
+  font-size: 4em;
+}
+.appui-xxl,
+.appui-xxlarge{
+  font-size: 2.5em;
 }
 .appui-xl,
 .appui-xlarge{
@@ -137,8 +145,8 @@ table td{
 /* no border */
 .appui-o,
 .appui-no-border{
-  border:0 !important;
-  outline:0 !important;
+  border:0;
+  outline:0;
 }
 iframe.appui-h,
 iframe.appui-hidden{
@@ -158,7 +166,7 @@ iframe.appui-hidden{
   border-style: solid;
   margin: 1em;
   padding: 1em;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
   /* Attempt for nesting forms */
   .appui-section{
     border-style:dashed;
@@ -168,7 +176,7 @@ iframe.appui-hidden{
   }
   hr{
     border:2px;
-    height:2px !important;
+    height:2px;
     margin: 1em;
   }
   legend,.appui-legend{
@@ -181,7 +189,7 @@ iframe.appui-hidden{
 .appui-spacer{
   display:block;
   position:relative;
-  float:left !important;
+  float:left;
   width: 10px;
   min-height: 1px;
 }
@@ -224,7 +232,7 @@ iframe.appui-hidden{
 }
 .appui-block{
   display:block;
-  float:left !important;
+  float:left;
 }
 .appui-iblock{
   display:inline-block;
@@ -232,7 +240,7 @@ iframe.appui-hidden{
 .appui-form-label{
   .appui-block;
   margin:0.3em 2em 0.3em 0;
-  clear:left !important;
+  clear:left;
   min-height:1.5em;
   width: 200px;
   vertical-align:top;
@@ -242,7 +250,7 @@ iframe.appui-hidden{
 .appui-form-field{
   .appui-block;
   margin:0.3em 0;
-  clear:right !important;
+  clear:right;
   width: 500px;
   vertical-align:top;
 }
@@ -265,7 +273,7 @@ iframe.appui-hidden{
   min-height:1.5em;
 }
 .appui-elem-hidden{
-  display:none !important;
+  display:none;
 }
 input.appui-form-field,
 .appui-form-field input,
@@ -379,7 +387,7 @@ input.appui-form-label{
   color: @white;
 }
 .appui-blue{
-  color: darken(@blue, 60%) !important;
+  color: darken(@blue, 60%);
 }
 .appui-red{
   color: @red;
@@ -395,32 +403,35 @@ input.appui-form-label{
 }
 
 .appui-bg-black{
-  background-color: @black !important;
+  background-color: @black;
   color: @white;
 }
 .appui-bg-white{
-  background-color: @white !important;
+  background-color: @white;
   color: @black;
 }
 .appui-bg-blue{
-  background-color: darken(@blue, 60%) !important;
+  background-color: darken(@blue, 60%);
   color: @white;
 }
 .appui-bg-red{
-  background-color: darken(@red, 60%) !important;
+  background-color: darken(@red, 60%);
   color: @white;
 }
 .appui-bg-green{
-  background-color: darken(@green, 60%) !important;
+  background-color: darken(@green, 60%);
   color: @white;
 }
 .appui-bg-orange{
-  background-color: darken(@orange, 60%) !important;
+  background-color: darken(@orange, 60%);
   color: @white;
 }
 .appui-bg-yellow{
-  background-color: darken(@yellow, 60%) !important;
+  background-color: darken(@yellow, 60%);
   color: @white;
+}
+div.appui-h-100.k-grid{
+  border-width: 0;
 }
 div.appui-widget{
   word-wrap: break-word;
