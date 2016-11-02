@@ -296,7 +296,8 @@
       yes: "Yes",
       no: "No",
       unknown: "Unknown",
-      untitled: "Untitled"
+      untitled: "Untitled",
+      confirmation: "Confirmation"
     },
     var: {
       /* Usable datatypes through jQuery Ajax function */
@@ -761,8 +762,170 @@
         return false;
 
       },
+  
+      /* Sends a message in a modal dialog */
+      alert: function() {
+        if ( window.kendo !== undefined ) {
+          var msg,
+              title,
+              width,
+              height,
+              callbackOpen,
+              callbackClose,
+              onOpen,
+              options = {},
+              onClose,
+              has_msg = false,
+              has_width = false,
+              has_callback = false,
+              $d;
+          for ( var i = 0; i < arguments.length; i++ ) {
+            if ( !has_msg ){
+              msg = arguments[i];
+              has_msg = 1;
+            }
+            else if ( appui.fn.isDimension(arguments[i]) || (arguments[i] === 'auto') ){
+              if ( has_width ){
+                height = arguments[i];
+              }
+              else{
+                width = arguments[i];
+                has_width = 1;
+              }
+            }
+            else if ( typeof(arguments[i]) === 'string' ) {
+              title = arguments[i];
+            }
+            else if ( $.isFunction(arguments[i]) ){
+              if ( has_callback ){
+                callbackClose = arguments[i];
+              }
+              else{
+                callbackOpen = arguments[i];
+                has_callback = 1;
+              }
+            }
+            else if ( typeof(arguments[i]) === 'object' ){
+              options = arguments[i];
+            }
+          }
+          if (!msg) {
+            msg = appui.lng.errorText;
+          }
+          if (!title) {
+            title = appui.lng.error;
+          }
+          if (!height) {
+            height = "auto";
+          }
+          $d = $('<div/>').appendTo(document.body);
+          onOpen = function(){
+            appui.fn.defaultAlertFunction($d);
+            if ( callbackOpen ){
+              callbackOpen($d);
+            }
+            appui.fn.analyzeContent($d);
+          };
+          onClose = function(){
+            if ( callbackClose ){
+              callbackClose($d);
+            }
+          };
+          $d.kendoAlert({
+            content: msg,
+            title: title,
+            maxWidth: options.maxWidth !== undefined ? options.maxWidth : appui.env.width - 50,
+            maxHeight: options.maxHeight !== undefined ? options.maxHeight : appui.env.height - 50,
+            width: width,
+            height: height,
+            open: function() {
+              return onOpen($d);
+            },
+            close: function() {
+              return onClose($d);
+            }
+          });
+        }
+      },
+      
+      confirm: function(){
+        if ( window.kendo !== undefined ) {
+          var msg,
+              title,
+              width,
+              height,
+              callbackYes,
+              callbackNo,
+              options = {},
+              has_msg = false,
+              has_width = false,
+              has_callback = false,
+              $d;
+          for ( var i = 0; i < arguments.length; i++ ) {
+            if ( !has_msg ){
+              msg = arguments[i];
+              has_msg = 1;
+            }
+            else if ( appui.fn.isDimension(arguments[i]) || (arguments[i] === 'auto') ){
+              if ( has_width ){
+                height = arguments[i];
+              }
+              else{
+                width = arguments[i];
+                has_width = 1;
+              }
+            }
+            else if ( typeof(arguments[i]) === 'string' ) {
+              title = arguments[i];
+            }
+            else if ( $.isFunction(arguments[i]) ){
+              if ( has_callback ){
+                callbackNo = arguments[i];
+              }
+              else{
+                callbackYes = arguments[i];
+                has_callback = 1;
+              }
+            }
+            else if ( typeof(arguments[i]) === 'object' ){
+              options = arguments[i];
+            }
+          }
+          if ( callbackYes ){
+            if (!msg) {
+              msg = appui.lng.errorText;
+            }
+            if (!title) {
+              title = appui.lng.confirmation;
+            }
+            if (!height) {
+              height = "auto";
+            }
+            if (!callbackNo) {
+              callbackNo = function(){};
+            }
+            $d = $('<div/>').appendTo(document.body);
+            $d.kendoConfirm({
+              actions: [
+                {text: appui.lng.yes, action: callbackYes},
+                {text: appui.lng.no, action: callbackNo}
+              ],
+              content: msg,
+              title: title,
+              maxWidth: options.maxWidth !== undefined ? options.maxWidth : appui.env.width - 50,
+              maxHeight: options.maxHeight !== undefined ? options.maxHeight : appui.env.height - 50,
+              width: width,
+              height: height,
+              open: function() {
+                appui.fn.defaultAlertFunction($d);
+                appui.fn.analyzeContent($d);
+              }
+            });
+          }
+        }
+      },
 
-      closeAlert: function(ele) {
+      closePopup: function(ele) {
         if (appui.app.popups.length > 0) {
           if ( ele && !appui.app.popups[appui.app.popups.length - 1].has(ele) ){
             return;
@@ -777,7 +940,7 @@
       },
 
       /* Sends a message in a modal dialog */
-      alert: function() {
+      popup: function() {
         var msg,
             title,
             width,
@@ -830,7 +993,7 @@
         if (!height) {
           height = false;
         }
-        $d = $('<div class="appui-logger">').appendTo(document.body);
+        $d = $('<div class="appui-logger"/>').appendTo(document.body);
         if ( callbackOpen ){
           $d.data("appui_callbackOpen", callbackOpen);
         }
@@ -1945,17 +2108,20 @@
       cssFullWidth: function(ele){
         // Resizing the .appui-full-width containers
         return ele.each(function(i, cont){
+          /** @var jQuery $p */
           var $p = $(cont),
               allFW = $(cont).children(".appui-full-width:visible");
           if ( allFW.length ){
-            $p.css("overflow", "hidden");
+            if ( $p.css("overflow") === 'auto' ){
+              $p.css("overflow", "hidden");
+            }
             var $$ = $p.children(".appui-full-width:first"),
                 w = $p.width(),
                 siblings = $$.siblings(),
                 siblingsFW = siblings.filter(".appui-full-width");
             while ( !w && ($p[0] !== document.body) ){
               $p = $p.parent();
-              h = $p.width();
+              w = $p.width();
             }
             if ( w ){
               var num = allFW.length,
@@ -2015,11 +2181,13 @@
       cssFullHeight: function(ele){
         // Resizing the .appui-full-height containers
         return ele.each(function(i, cont){
+          /** @var jQuery $p */
           var $p = $(cont),
               allFH = $(cont).children(".appui-full-height:visible");
           if ( allFH.length ){
-            $p.css("overflow", "hidden");
-            /** @var jQuery $p */
+            if ( $p.css("overflow") === 'auto' ){
+              $p.css("overflow", "hidden");
+            }
             var $$ = $p.children(".appui-full-height:visible:first"),
                 h = $p.height(),
                 siblings = $$.siblings(),
@@ -2058,20 +2226,6 @@
                 siblingsFH.outerHeight(h/num);
               }
               $$.outerHeight(h/num);
-              var $table = $$.children(".k-grid-content:visible");
-              if ( $table.length === 1 ){
-                // @todo See if we leave it or not
-                //$(ele).css({overflow:"hidden"});
-                h = $$.height();
-                $table.siblings().each(function(){
-                  h -= $(this).outerHeight(true);
-                });
-                $table
-                  .height(h)
-                  .closest("[data-role=grid]")
-                  .data("kendoGrid")
-                  .refresh();
-              }
             }
           }
         });
@@ -2257,6 +2411,9 @@
       },
   
       analyzeContent: function(ele, force){
+        if ( !ele ){
+          ele = $(document.body);
+        }
         return ele.each(function(){
           var ele = this,
               $ele = $(ele),
@@ -2388,7 +2545,7 @@
             appui.fn.submit(this, e);
           }).keyup(function(e){
             if ( (e.key === 'Esc') || (e.key === 'Escape') ){
-              appui.fn.closeAlert();
+              appui.fn.closePopup();
             }
           });
 

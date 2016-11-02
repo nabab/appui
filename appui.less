@@ -73,29 +73,33 @@ table td{
   height: 25%;
   box-sizing: border-box;
 }
+.appui-xxxxl,
+.appui-xxxxlarge{
+  font-size: 4em !important;
+}
 .appui-xxxl,
 .appui-xxxlarge{
-  font-size: 4em;
+  font-size: 2.8em !important;
 }
-.appui-xxl,
-.appui-xxlarge{
-  font-size: 2.5em;
+.appui-xxxl,
+.appui-xxxlarge{
+  font-size: 2.1em !important;
 }
 .appui-xl,
 .appui-xlarge{
-  font-size: 1.7em;
+  font-size: 1.6em !important;
 }
 .appui-lg,
 .appui-large{
-  font-size: 1.4em;
+  font-size: 1.3em !important;
 }
 .appui-s,
 .appui-small{
-  font-size: 0.8em;
+  font-size: 0.8em !important;
 }
 .appui-xs,
 .appui-xsmall{
-  font-size: 0.6em;
+  font-size: 0.6em !important;
 }
 /* hidden */
 .appui-h,
@@ -260,9 +264,11 @@ iframe.appui-hidden{
 }
 .appui-full-width{
   .appui-block;
+  .appui-w-100;
 }
 .appui-full-height{
-  display: block
+  display: block;
+  .appui-h-100;
 }
 .appui-form-full{
   .appui-block;
@@ -470,10 +476,15 @@ div.appui-widget{
       font-size: large;
       cursor: pointer;
     }
-    i.apst-toggler{
+    i.appui-widget{
       position: absolute;
       top: 3px;
+    }
+    i.appui-widget.fa-chevron{
       left: 5px;
+    }
+    i.appui-widget.fa-cog{
+      right: 5px;
     }
     div{
       position: absolute;
