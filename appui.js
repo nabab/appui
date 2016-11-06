@@ -1465,7 +1465,7 @@
         appui.fn.post(url, data, function(d){
           var type2 = (typeof(d)).toLowerCase();
           if ( type2 === 'string' ){
-            appui.fn.alert(d, "Returned...", w ? w : "auto", h ? h : "auto", function(ele){
+            appui.fn.popup(d, "Returned...", w ? w : "auto", h ? h : "auto", function(ele){
               appui.fn.callback(url, d, false, false, ele);
               if ($.isFunction(fn) ){
                 eval(fn(ele));
@@ -1473,7 +1473,7 @@
             });
           }
           if ( (type2 === 'object') && d.content){
-            appui.fn.alert(d.content, d.title ? d.title : ' ', w ? w : "auto", h ? h : "auto", function(ele){
+            appui.fn.popup(d.content, d.title ? d.title : ' ', w ? w : "auto", h ? h : "auto", function(ele){
               appui.fn.callback(url, d, false, false, ele);
               if ($.isFunction(fn) ){
                 eval(fn(ele));
@@ -2158,20 +2158,6 @@
                   siblingsFW.width(w/num);
                 }
                 $$.width(w/num);
-                var $table = $$.children(".k-grid-content:visible");
-                if ( $table.length === 1 ){
-                  // @todo See if we leave it or not
-                  //$(ele).css({overflow:"hidden"});
-                  w = $$.width();
-                  $table.siblings().each(function(){
-                    w -= $(this).outerWidth(true);
-                  });
-                  $table
-                    .width(w)
-                    .closest("[data-role=grid]")
-                    .data("kendoGrid")
-                    .refresh();
-                }
               }
             }
           }
@@ -2219,13 +2205,13 @@
               if ( num > 1 ){
                 $.each(siblingsFH, function(){
                   var $t = $(this);
-                  h -= $t.outerHeight(true) - $t.outerHeight();
+                  h -= $t.outerHeight(true) - $t.height();
                 });
               }
               if ( siblingsFH.length ){
-                siblingsFH.outerHeight(h/num);
+                siblingsFH.height(h/num);
               }
-              $$.outerHeight(h/num);
+              $$.height(h/num);
             }
           }
         });
@@ -2282,7 +2268,7 @@
             }
             // space is the total dimension of the paddings and margins of both label and field elements
             // It is calculated only for the first element
-            if (!space) {
+            if ( !space ){
               // Corresponding field object for this label
               var $fld = $lbl.nextUntil(".appui-form-label", ".appui-form-field");
               space = ( $lbl.outerWidth(true) - $lbl.width() ) + ( $fld.outerWidth(true) - $fld.width() );
@@ -2308,7 +2294,7 @@
             else {
               total = false;
               for (var $par = $fpar; !total; $par = $par.parent()) {
-                total = $par.width() - 1;
+                total = $par.width();
                 isOverflow = $par.css("overflow") === "auto";
               }
             }
@@ -2355,7 +2341,6 @@
             }
             if ($hiddenChildren) {
               $hiddenChildren.addClass("appui-elem-hidden");
-              $hiddenChildren = false;
             }
           }
           if ($hiddenEle) {
@@ -2430,9 +2415,13 @@
               });
           }
           
+          
           // In case we have data bindings we leave a bit of time before setting initial values
           setTimeout(function(){
             appui.fn.setInitialValues(ele);
+            $ele.find(".k-grid:not(.appui-sensor)")
+              .addClass("appui-sensor")
+              .data("appuiFullHeight", 1);
           }, 200);
   
           $ele

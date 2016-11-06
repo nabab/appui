@@ -27,51 +27,51 @@ table td{
 }
 .appui-w-100{
   width: 100%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-w-75{
   width: 75%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-w-66{
   width: 66.66%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-w-50{
   width: 50%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-w-33{
   width: 33.33%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-w-25{
   width: 25%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-h-100{
   height: 100%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-h-75{
   height: 75%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-h-66{
   height: 66.66%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-h-50{
   height: 50%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-h-33{
   height: 33.33%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-h-25{
   height: 25%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 .appui-xxxxl,
 .appui-xxxxlarge{
@@ -170,7 +170,7 @@ iframe.appui-hidden{
   border-style: solid;
   margin: 1em;
   padding: 1em;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
   /* Attempt for nesting forms */
   .appui-section{
     border-style:dashed;
@@ -207,56 +207,105 @@ iframe.appui-hidden{
 .appui-no-padding{
   padding: 0;
 }
-.appui-hpadded{
+.appui-hlpadded{
   padding-left: 2em;
   padding-right: 2em;
 }
-.appui-vpadded{
+.appui-vlpadded{
   padding-top: 2em;
   padding-bottom: 2em;
+}
+.appui-lpadded{
+  .appui-hlpadded;
+  .appui-vlpadded;
+}
+.appui-hpadded{
+  padding-left: 1em;
+  padding-right: 1em;
+}
+.appui-vpadded{
+  padding-top: 1em;
+  padding-bottom: 1em;
 }
 .appui-padded{
   .appui-hpadded;
   .appui-vpadded;
 }
+.appui-hspadded{
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+.appui-vspadded{
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+.appui-spadded{
+  .appui-hspadded;
+  .appui-vspadded;
+}
 .appui-no-margin{
   margin: 0;
 }
-.appui-hmargin{
+.appui-hlmargin{
   margin-left: 2em;
   margin-right: 2em;
 }
-.appui-vmargin{
+.appui-vlmargin{
   margin-top: 2em;
   margin-bottom: 2em;
+}
+.appui-lmargin{
+  .appui-hlmargin;
+  .appui-vlmargin;
+}
+.appui-hmargin{
+  margin-left: 1em;
+  margin-right: 1em;
+}
+.appui-vmargin{
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 .appui-margin{
   .appui-hmargin;
   .appui-vmargin;
 }
+.appui-hsmargin{
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+.appui-vsmargin{
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.appui-smargin{
+  .appui-hmargin;
+  .appui-vmargin;
+}
 .appui-block{
-  display:block;
-  float:left;
+  box-sizing: border-box !important;
+  display: block;
+  float: left;
 }
 .appui-iblock{
-  display:inline-block;
+  display: inline-block;
 }
 .appui-form-label{
   .appui-block;
-  margin:0.3em 2em 0.3em 0;
-  clear:left;
-  min-height:1.5em;
+  margin: 0.3em 2em 0.3em 0;
+  clear: left;
+  min-height: 1.5em;
   width: 200px;
-  vertical-align:top;
-  white-space:nowrap;
+  vertical-align: top;
+  white-space: nowrap;
   padding-right: 60px;
 }
 .appui-form-field{
   .appui-block;
-  margin:0.3em 0;
-  clear:right;
+  margin: 0.3em 0;
+  clear: right;
   width: 500px;
-  vertical-align:top;
+  vertical-align: top;
 }
 .appui-form-field .appui-form-field, .appui-form-field .appui-form-label, .appui-form-label .appui-form-field, .appui-form-label .appui-form-label{
   margin-top: 0!important;
@@ -330,7 +379,6 @@ input.appui-form-label{
     text-align: right;
     margin-top: 0.5em;
     opacity: 0.8;
-
   }
   /** loader */
   .loader {
@@ -476,15 +524,15 @@ div.appui-widget{
       font-size: large;
       cursor: pointer;
     }
-    i.appui-widget{
+    i.appui-widget-button{
       position: absolute;
       top: 3px;
-    }
-    i.appui-widget.fa-chevron{
-      left: 5px;
-    }
-    i.appui-widget.fa-cog{
-      right: 5px;
+      &.fa-chevron-up{
+        left: 5px;
+      }
+      &.fa-cog{
+        right: 5px;
+      }
     }
     div{
       position: absolute;
