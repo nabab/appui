@@ -359,9 +359,12 @@ input.appui-form-label{
   }
 }
 .appui-notification{
+  color: @white;
+}
+.appui-notification,.appui-loading{
   font-size: small;
   text-align: left;
-  padding: 0 2em;
+  padding: 2em 3em;
   .appui-notification-close {
     line-height: 0.7em;
     padding: 0;
@@ -527,7 +530,7 @@ div.appui-widget{
     i.appui-widget-button{
       position: absolute;
       top: 3px;
-      &.fa-chevron-up{
+      &.fa-chevron-up, &.fa-chevron-down{
         left: 5px;
       }
       &.fa-cog{

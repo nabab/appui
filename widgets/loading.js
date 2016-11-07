@@ -79,7 +79,7 @@
                 // define a custom template for the built-in "loading" notification type
                 type: "loading",
                 template: function(d){
-                  return '<div class="appui-notification k-notification-wrap">' +
+                  return '<div class="appui-loading k-notification-wrap">' +
                     '<div><span class="appui-notification-icon loader"><span class="loader-inner"></span></span> ' +
                     appui.lng.loading +
                     ( d.url ? '</div><div class="appui-notification-info">' + d.url : '' ) +

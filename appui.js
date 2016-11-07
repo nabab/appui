@@ -505,13 +505,17 @@
         //appui.fn.log(r);
         return true;
       },
-      startLoadingFunction: function(r) {
-        //appui.fn.log(r);
-        return true;
+      startLoadingFunction: function (uniq, url, data) {
+        if ( appui.app.loading ){
+          appui.app.loading(url, uniq);
+          return uniq;
+        }
       },
-      endLoadingFunction: function(end) {
-        //appui.fn.log(r);
-        return true;
+  
+      endLoadingFunction: function (url, uniq, data, res) {
+        if ( appui.app.loading ){
+          appui.app.loading(uniq);
+        }
       },
       defaultHistoryFunction: function(url, title, data) {
         //appui.fn.log(r);
