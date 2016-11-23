@@ -459,7 +459,7 @@
           }
           r = new Date(d);
         }
-        else if ( window.kendo !== undefined ) {
+        if ( window.kendo !== undefined ) {
           try {
             r = kendo.parseDate(d);
           }
