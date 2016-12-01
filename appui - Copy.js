@@ -10,295 +10,12 @@
  *  - language (l)
  */
 ;
-/**
- * Copyright Marc J. Schmidt. See the LICENSE file at the top-level
- * directory of this distribution and at
- * https://github.com/marcj/css-element-queries/blob/master/LICENSE.
- */
-;
-/*!
- * jQuery resize event - v1.1 - 3/14/2010
- * http://benalman.com/projects/jquery-resize-plugin/
- *
- * Copyright (c) 2010 "Cowboy" Ben Alman
- * Dual licensed under the MIT and GPL licenses.
- * http://benalman.com/about/license/
- */
-
-// Script: jQuery resize event
-//
-// *Version: 1.1, Last updated: 3/14/2010*
-//
-// Project Home - http://benalman.com/projects/jquery-resize-plugin/
-// GitHub       - http://github.com/cowboy/jquery-resize/
-// Source       - http://github.com/cowboy/jquery-resize/raw/master/jquery.ba-resize.js
-// (Minified)   - http://github.com/cowboy/jquery-resize/raw/master/jquery.ba-resize.min.js (1.0kb)
-//
-// About: License
-//
-// Copyright (c) 2010 "Cowboy" Ben Alman,
-// Dual licensed under the MIT and GPL licenses.
-// http://benalman.com/about/license/
-//
-// About: Examples
-//
-// This working example, complete with fully commented code, illustrates a few
-// ways in which this plugin can be used.
-//
-// resize event - http://benalman.com/code/projects/jquery-resize/examples/resize/
-//
-// About: Support and Testing
-//
-// Information about what version or versions of jQuery this plugin has been
-// tested with, what browsers it has been tested in, and where the unit tests
-// reside (so you can test it yourself).
-//
-// jQuery Versions - 1.3.2, 1.4.1, 1.4.2
-// Browsers Tested - Internet Explorer 6-8, Firefox 2-3.6, Safari 3-4, Chrome, Opera 9.6-10.1.
-// Unit Tests      - http://benalman.com/code/projects/jquery-resize/unit/
-//
-// About: Release History
-//
-// 1.1 - (3/14/2010) Fixed a minor bug that was causing the event to trigger
-//       immediately after bind in some circumstances. Also changed $.fn.data
-//       to $.data to improve performance.
-// 1.0 - (2/10/2010) Initial release
-
-(function($,window,undefined){
-  '$:nomunge'; // Used by YUI compressor.
-  
-  // A jQuery object containing all non-window elements to which the resize
-  // event is bound.
-  var elems = $([]),
-  
-      // Extend $.resize if it already exists, otherwise create it.
-      jq_resize = $.resize = $.extend( $.resize, {} ),
-  
-      timeout_id,
-  
-      // Reused strings.
-      str_setTimeout = 'setTimeout',
-      str_resize = 'resize',
-      str_data = str_resize + '-special-event',
-      str_delay = 'delay',
-      str_throttle = 'throttleWindow';
-  
-  // Property: jQuery.resize.delay
-  //
-  // The numeric interval (in milliseconds) at which the resize event polling
-  // loop executes. Defaults to 250.
-  
-  jq_resize[ str_delay ] = 250;
-  
-  // Property: jQuery.resize.throttleWindow
-  //
-  // Throttle the native window object resize event to fire no more than once
-  // every <jQuery.resize.delay> milliseconds. Defaults to true.
-  //
-  // Because the window object has its own resize event, it doesn't need to be
-  // provided by this plugin, and its execution can be left entirely up to the
-  // browser. However, since certain browsers fire the resize event continuously
-  // while others do not, enabling this will throttle the window resize event,
-  // making event behavior consistent across all elements in all browsers.
-  //
-  // While setting this property to false will disable window object resize
-  // event throttling, please note that this property must be changed before any
-  // window object resize event callbacks are bound.
-  
-  jq_resize[ str_throttle ] = true;
-  
-  // Event: resize event
-  //
-  // Fired when an element's width or height changes. Because browsers only
-  // provide this event for the window element, for other elements a polling
-  // loop is initialized, running every <jQuery.resize.delay> milliseconds
-  // to see if elements' dimensions have changed. You may bind with either
-  // .resize( fn ) or .bind( "resize", fn ), and unbind with .unbind( "resize" ).
-  //
-  // Usage:
-  //
-  // > jQuery('selector').bind( 'resize', function(e) {
-  // >   // element's width or height has changed!
-  // >   ...
-  // > });
-  //
-  // Additional Notes:
-  //
-  // * The polling loop is not created until at least one callback is actually
-  //   bound to the 'resize' event, and this single polling loop is shared
-  //   across all elements.
-  //
-  // Double firing issue in jQuery 1.3.2:
-  //
-  // While this plugin works in jQuery 1.3.2, if an element's event callbacks
-  // are manually triggered via .trigger( 'resize' ) or .resize() those
-  // callbacks may double-fire, due to limitations in the jQuery 1.3.2 special
-  // events system. This is not an issue when using jQuery 1.4+.
-  //
-  // > // While this works in jQuery 1.4+
-  // > $(elem).css({ width: new_w, height: new_h }).resize();
-  // >
-  // > // In jQuery 1.3.2, you need to do this:
-  // > var elem = $(elem);
-  // > elem.css({ width: new_w, height: new_h });
-  // > elem.data( 'resize-special-event', { width: elem.width(), height: elem.height() } );
-  // > elem.resize();
-  
-  $.event.special[ str_resize ] = {
-    
-    // Called only when the first 'resize' event callback is bound per element.
-    setup: function() {
-      // Since window has its own native 'resize' event, return false so that
-      // jQuery will bind the event using DOM methods. Since only 'window'
-      // objects have a .setTimeout method, this should be a sufficient test.
-      // Unless, of course, we're throttling the 'resize' event for window.
-      if ( !jq_resize[ str_throttle ] && this[ str_setTimeout ] ) { return false; }
-      
-      var elem = $(this);
-      
-      // Add this element to the list of internal elements to monitor.
-      elems = elems.add( elem );
-      
-      // Initialize data store on the element.
-      $.data( this, str_data, { w: elem.width(), h: elem.height() } );
-      
-      // If this is the first element added, start the polling loop.
-      if ( elems.length === 1 ) {
-        loopy();
-      }
-    },
-    
-    // Called only when the last 'resize' event callback is unbound per element.
-    teardown: function() {
-      // Since window has its own native 'resize' event, return false so that
-      // jQuery will unbind the event using DOM methods. Since only 'window'
-      // objects have a .setTimeout method, this should be a sufficient test.
-      // Unless, of course, we're throttling the 'resize' event for window.
-      if ( !jq_resize[ str_throttle ] && this[ str_setTimeout ] ) { return false; }
-      
-      var elem = $(this);
-      
-      // Remove this element from the list of internal elements to monitor.
-      elems = elems.not( elem );
-      
-      // Remove any data stored on the element.
-      elem.removeData( str_data );
-      
-      // If this is the last element removed, stop the polling loop.
-      if ( !elems.length ) {
-        clearTimeout( timeout_id );
-      }
-    },
-    
-    // Called every time a 'resize' event callback is bound per element (new in
-    // jQuery 1.4).
-    add: function( handleObj ) {
-      // Since window has its own native 'resize' event, return false so that
-      // jQuery doesn't modify the event object. Unless, of course, we're
-      // throttling the 'resize' event for window.
-      if ( !jq_resize[ str_throttle ] && this[ str_setTimeout ] ) { return false; }
-      
-      var old_handler;
-      
-      // The new_handler function is executed every time the event is triggered.
-      // This is used to update the internal element data store with the width
-      // and height when the event is triggered manually, to avoid double-firing
-      // of the event callback. See the "Double firing issue in jQuery 1.3.2"
-      // comments above for more information.
-      
-      function new_handler( e, w, h ) {
-        var elem = $(this),
-            data = $.data( this, str_data );
-        
-        // If called from the polling loop, w and h will be passed in as
-        // arguments. If called manually, via .trigger( 'resize' ) or .resize(),
-        // those values will need to be computed.
-        data.w = w !== undefined ? w : elem.width();
-        data.h = h !== undefined ? h : elem.height();
-        
-        old_handler.apply( this, arguments );
-      };
-      
-      // This may seem a little complicated, but it normalizes the special event
-      // .add method between jQuery 1.4/1.4.1 and 1.4.2+
-      if ( $.isFunction( handleObj ) ) {
-        // 1.4, 1.4.1
-        old_handler = handleObj;
-        return new_handler;
-      } else {
-        // 1.4.2+
-        old_handler = handleObj.handler;
-        handleObj.handler = new_handler;
-      }
-    }
-    
-  };
-  
-  function loopy() {
-    
-    // Start the polling loop, asynchronously.
-    timeout_id = window[ str_setTimeout ](function(){
-      
-      // Iterate over all elements to which the 'resize' event is bound.
-      elems.each(function(){
-        var elem = $(this),
-            width = elem.width(),
-            height = elem.height(),
-            data = $.data( this, str_data );
-        
-        // If element size has changed since the last time, update the element
-        // data store and trigger the 'resize' event.
-        if ( width !== data.w || height !== data.h ) {
-          elem.trigger( str_resize, [ data.w = width, data.h = height ] );
-        }
-        
-      });
-      
-      // Loop.
-      loopy();
-      
-    }, jq_resize[ str_delay ] );
-    
-  };
-  
-})(jQuery,this);
-
 (function($) {
   "use strict";
   /*global window */
   /*global jQuery */
   /*global appui */
 
-  // allows for selection of elements with data attributes
-  $.extend($.expr[ ":" ], {
-    data: ($.expr.createPseudo)
-      ? $.expr.createPseudo(function(dataName) {
-      return function(elem) {
-        return !!$.data(elem, dataName);
-      };
-    })
-      : function(elem, i, match) {
-      // support: jQuery < 1.8
-      return !!$.data(elem, match[ 3 ]);
-    }
-  });
-
-
-  $.fn.extend({
-    animateCss: function (animationName, callback) {
-      var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
-      return this.each(function(){
-        $(this).addClass('animated ' + animationName).one(animationEnd, function(){
-          if (typeof callback == 'function') { // make sure the callback is a function
-            callback.call(this); // brings the scope to the callback
-          }
-          $(this).removeClass('animated ' + animationName);
-          
-        });
-      });
-    }
-  });
-  
   $.migrateMute = true;
   if ( $.fn.reverse === undefined ){
     $.fn.reverse = [].reverse;//save a new function from Array.reverse
@@ -322,13 +39,10 @@
       closeOthers: "Close others",
       pin: "Pin",
       arrange: "Arrange",
-      cancel: "Cancel",
       unpin: "Unpin",
       yes: "Yes",
       no: "No",
-      unknown: "Unknown",
-      untitled: "Untitled",
-      confirmation: "Confirmation"
+      untitled: "Untitled"
     },
     var: {
       /* Usable datatypes through jQuery Ajax function */
@@ -441,7 +155,7 @@
       cdn: 'http://cdn.app-ui.com/',
       /* Default language */
       lang: 'en',
-      win: $window,
+      ele: $(document.body),
       version: "0.2",
       host: window.location.protocol + '//' + window.location.hostname,
       url: window.location.href,
@@ -490,7 +204,7 @@
           }
           r = new Date(d);
         }
-        if ( window.kendo !== undefined ) {
+        else if ( window.kendo !== undefined ) {
           try {
             r = kendo.parseDate(d);
           }
@@ -536,17 +250,13 @@
         //appui.fn.log(r);
         return true;
       },
-      startLoadingFunction: function (uniq, url, data) {
-        if ( appui.app.loading ){
-          appui.app.loading(url, uniq);
-          return uniq;
-        }
+      startLoadingFunction: function(r) {
+        //appui.fn.log(r);
+        return true;
       },
-  
-      endLoadingFunction: function (url, uniq, data, res) {
-        if ( appui.app.loading ){
-          appui.app.loading(uniq);
-        }
+      endLoadingFunction: function(end) {
+        //appui.fn.log(r);
+        return true;
       },
       defaultHistoryFunction: function(url, title, data) {
         //appui.fn.log(r);
@@ -725,57 +435,7 @@
         }
         return st;
       },
-  
-      userName: function(d){
-        var type = (typeof(d)).toLowerCase();
-        if ( type === 'object' ){
-          if ( d.full_name ){
-            return d.full_name;
-          }
-          if ( d.login ){
-            return d.login;
-          }
-          return appui.lng.unknown + (d.id ? " (" + d.id + ")" : "");
-        }
-        if ( (type === 'number') ){
-          if ( appui.app.users !== undefined ){
-            return appui.fn.get_field(appui.app.users, "value", id, "text");
-          }
-          return appui.lng.unknown + " (" + d + ")";
-        }
-        return appui.lng.unknown;
-      },
-  
-      userGroup: function(d){
-        var type = (typeof(d)).toLowerCase();
-        if ( type === 'object' ){
-          d = d.id_group;
-          type = (typeof(d)).toLowerCase();
-        }
-        if ( (type === 'number') ){
-          if ( appui.app.groups !== undefined ){
-            return appui.fn.get_field(appui.app.groups, "value", id, "text");
-          }
-          return appui.lng.unknown + " (" + d + ")";
-        }
-        return appui.lng.unknown;
-      },
-  
-      userAvatar: function(id){
-        var type = (typeof(d)).toLowerCase(),
-            avatar;
-        if ( (type === 'object') && d.avatar ){
-          avatar = d.avatar;
-        }
-        if ( (type === 'number') && (appui.app.users !== undefined) ){
-          avatar = appui.fn.get_field(appui.app.users, "value", id, "avatar");
-        }
-        if ( avatar ){
-          return '<span class="appui-avatar"><img src="' + avatar + '" alt="' + name + '"></span>';
-        }
-        return appui.var.defaultAvatar;
-      },
-  
+
       isColor: function(st){
         var reg = new RegExp('^(#[a-f0-9]{6}|#[a-f0-9]{3}|rgb *\( *[0-9]{1,3}%? *, *[0-9]{1,3}%? *, *[0-9]{1,3}%? *\)|rgba *\( *[0-9]{1,3}%? *, *[0-9]{1,3}%? *, *[0-9]{1,3}%? *, *[0-9]{1,3}%? *\)|black|green|silver|gray|olive|white|yellow|maroon|navy|red|blue|purple|teal|fuchsia|aqua)$', 'i');
         return reg.test(st);
@@ -797,170 +457,8 @@
         return false;
 
       },
-  
-      /* Sends a message in a modal dialog */
-      alert: function() {
-        if ( window.kendo !== undefined ) {
-          var msg,
-              title,
-              width,
-              height,
-              callbackOpen,
-              callbackClose,
-              onOpen,
-              options = {},
-              onClose,
-              has_msg = false,
-              has_width = false,
-              has_callback = false,
-              $d;
-          for ( var i = 0; i < arguments.length; i++ ) {
-            if ( !has_msg ){
-              msg = arguments[i];
-              has_msg = 1;
-            }
-            else if ( appui.fn.isDimension(arguments[i]) || (arguments[i] === 'auto') ){
-              if ( has_width ){
-                height = arguments[i];
-              }
-              else{
-                width = arguments[i];
-                has_width = 1;
-              }
-            }
-            else if ( typeof(arguments[i]) === 'string' ) {
-              title = arguments[i];
-            }
-            else if ( $.isFunction(arguments[i]) ){
-              if ( has_callback ){
-                callbackClose = arguments[i];
-              }
-              else{
-                callbackOpen = arguments[i];
-                has_callback = 1;
-              }
-            }
-            else if ( typeof(arguments[i]) === 'object' ){
-              options = arguments[i];
-            }
-          }
-          if (!msg) {
-            msg = appui.lng.errorText;
-          }
-          if (!title) {
-            title = appui.lng.error;
-          }
-          if (!height) {
-            height = "auto";
-          }
-          $d = $('<div/>').appendTo(document.body);
-          onOpen = function(){
-            appui.fn.defaultAlertFunction($d);
-            if ( callbackOpen ){
-              callbackOpen($d);
-            }
-            appui.fn.analyzeContent($d);
-          };
-          onClose = function(){
-            if ( callbackClose ){
-              callbackClose($d);
-            }
-          };
-          $d.kendoAlert({
-            content: msg,
-            title: title,
-            maxWidth: options.maxWidth !== undefined ? options.maxWidth : appui.env.width,
-            maxHeight: options.maxHeight !== undefined ? options.maxHeight : appui.env.height,
-            width: width,
-            height: height,
-            open: function() {
-              return onOpen($d);
-            },
-            close: function() {
-              return onClose($d);
-            }
-          });
-        }
-      },
-      
-      confirm: function(){
-        if ( window.kendo !== undefined ) {
-          var msg,
-              title,
-              width,
-              height,
-              callbackYes,
-              callbackNo,
-              options = {},
-              has_msg = false,
-              has_width = false,
-              has_callback = false,
-              $d;
-          for ( var i = 0; i < arguments.length; i++ ) {
-            if ( !has_msg ){
-              msg = arguments[i];
-              has_msg = 1;
-            }
-            else if ( appui.fn.isDimension(arguments[i]) || (arguments[i] === 'auto') ){
-              if ( has_width ){
-                height = arguments[i];
-              }
-              else{
-                width = arguments[i];
-                has_width = 1;
-              }
-            }
-            else if ( typeof(arguments[i]) === 'string' ) {
-              title = arguments[i];
-            }
-            else if ( $.isFunction(arguments[i]) ){
-              if ( has_callback ){
-                callbackNo = arguments[i];
-              }
-              else{
-                callbackYes = arguments[i];
-                has_callback = 1;
-              }
-            }
-            else if ( typeof(arguments[i]) === 'object' ){
-              options = arguments[i];
-            }
-          }
-          if ( callbackYes ){
-            if (!msg) {
-              msg = appui.lng.errorText;
-            }
-            if (!title) {
-              title = appui.lng.confirmation;
-            }
-            if (!height) {
-              height = "auto";
-            }
-            if (!callbackNo) {
-              callbackNo = function(){};
-            }
-            $d = $('<div/>').appendTo(document.body);
-            $d.kendoConfirm({
-              actions: [
-                {text: appui.lng.yes, action: callbackYes},
-                {text: appui.lng.no, action: callbackNo}
-              ],
-              content: msg,
-              title: title,
-              maxWidth: options.maxWidth !== undefined ? options.maxWidth : appui.env.width,
-              maxHeight: options.maxHeight !== undefined ? options.maxHeight : appui.env.height,
-              width: width,
-              height: height,
-              open: function(e) {
-                appui.fn.defaultAlertFunction($d);
-                appui.fn.analyzeContent($d);
-              }
-            });
-          }
-        }
-      },
 
-      closePopup: function(ele) {
+      closeAlert: function(ele) {
         if (appui.app.popups.length > 0) {
           if ( ele && !appui.app.popups[appui.app.popups.length - 1].has(ele) ){
             return;
@@ -975,7 +473,7 @@
       },
 
       /* Sends a message in a modal dialog */
-      popup: function() {
+      alert: function() {
         var msg,
             title,
             width,
@@ -1023,70 +521,70 @@
           msg = appui.lng.errorText;
         }
         if (!title) {
-          title = appui.lng.untitled;
+          title = appui.lng.error;
         }
         if (!height) {
           height = false;
         }
-        $d = $('<div class="appui-logger"/>').appendTo(document.body);
-        if ( callbackOpen ){
-          $d.data("appui_callbackOpen", callbackOpen);
-        }
-        if ( callbackClose ){
-          $d.data("appui_callbackClose", callbackClose);
-        }
+        $d = $('<div class="appui-logger">').appendTo(document.body);
         onOpen = function(ele){
-          appui.app.popups.push(ele);
           appui.fn.defaultAlertFunction(ele);
-          if ( ele.data("appui_callbackOpen") ){
-            ele.data("appui_callbackOpen")(ele);
-          }
           if ( $.fn.restyle !== undefined ) {
-            ele.restyle();
+            //ele.restyle();
           }
-          appui.fn.analyzeContent(ele);
+          if ( $.fn.redraw !== undefined ) {
+            //ele.redraw();
+          }
+          if ( callbackOpen ){
+            callbackOpen(ele);
+          }
         };
         onClose = function(ele){
           appui.app.popups.pop();
-          if ( ele.data("appui_callbackClose") ){
-            return ele.data("appui_callbackClose")(ele);
+          if ( callbackClose ){
+            return callbackClose(ele);
           }
         };
         if ( window.kendo !== undefined ) {
           var cfg = {
             modal: options.modal !== undefined ? options.modal : true,
-            title: title || appui.lng.untitled,
-            maxWidth: options.maxWidth !== undefined ? options.maxWidth : appui.env.width,
-            maxHeight: options.maxHeight !== undefined ? options.maxHeight : appui.env.height,
+            title: title || appui.lng.errorText,
+            maxWidth: options.maxWidth !== undefined ? options.maxWidth : appui.env.width - 50,
+            maxHeight: options.maxHeight !== undefined ? options.maxHeight : appui.env.height - 50,
             width: width,
             pinned: options.pinned !== undefined ? options.pinned : true,
             resizable: options.resizable !== undefined ? options.resizable : true,
+            closable: options.closable !== undefined ? options.closable : true,
             actions: options.actions !== undefined ? options.actions : [
               "Maximize",
               "Close"
             ],
+            resize: function() {
+              if ( $.fn.redraw !== undefined ) {
+                $d.redraw();
+                this.refresh();
+              }
+            },
             refresh: function() {
               this.center();
             },
             deactivate: function() {
               this.destroy();
             },
-            open: function() {
+            activate: function(){
               this.center();
-            },
-            resize: function() {
-              this.refresh();
+              onOpen($d);
+              //this.refresh();
             },
             close: function() {
               return onClose($d);
             }
           };
           if ( height ){
-            appui.fn.log(height);
             cfg.height = height;
           }
-          $d.html(msg).kendoWindow(cfg);
-          appui.fn.analyzeContent($d);
+          appui.app.popups.push($d);
+          $d.append(msg).kendoWindow(cfg);
         }
         else {
           $d.append(msg).dialog({
@@ -1094,14 +592,21 @@
             resizable: options.resizable !== undefined ? options.resizable : true,
             stack: false,
             modal: options.modal !== undefined ? options.modal : true,
+            resize: function() {
+              if ( $.fn.redraw !== undefined ) {
+                $d.redraw();
+              }
+            },
             close: function() {
               onClose($d);
               $(this).dialog("destroy").remove();
+            },
+            open: function(){
+              appui.app.popups.push($d);
+              onOpen($d);
             }
           });
-          appui.fn.analyzeContent($d);
         }
-        onOpen($d);
       },
 
       resize_popup: function(){
@@ -1499,7 +1004,7 @@
         appui.fn.post(url, data, function(d){
           var type2 = (typeof(d)).toLowerCase();
           if ( type2 === 'string' ){
-            appui.fn.popup(d, "Returned...", w ? w : "auto", h ? h : "auto", function(ele){
+            appui.fn.alert(d, "Returned...", w ? w : "auto", h ? h : "auto", function(ele){
               appui.fn.callback(url, d, false, false, ele);
               if ($.isFunction(fn) ){
                 eval(fn(ele));
@@ -1507,7 +1012,7 @@
             });
           }
           if ( (type2 === 'object') && d.content){
-            appui.fn.popup(d.content, d.title ? d.title : ' ', w ? w : "auto", h ? h : "auto", function(ele){
+            appui.fn.alert(d.content, d.title ? d.title : ' ', w ? w : "auto", h ? h : "auto", function(ele){
               appui.fn.callback(url, d, false, false, ele);
               if ($.isFunction(fn) ){
                 eval(fn(ele));
@@ -1542,14 +1047,12 @@
               ele.val(res.content);
             }
             else {
-              appui.fn.insertContent(res.content, ele);
+              ele.html(res.content);
             }
           }
           if (tmp && isObj && res.script) {
             tmp = (function(data, ele){
-              var r = eval(res.script);
-              appui.fn.analyzeContent(ele, true);
-              return r;
+              return eval(res.script);
             })(res.data ? res.data : {}, ele ? ele : appui.env.ele);
           }
           /* Case where a callback is defined */
@@ -1634,8 +1137,7 @@
         }
         for ( var i = 1; i < arguments.length; i++ ){
           if ( typeof(arguments[i]) !== 'object' ){
-            appui.fn.log(arguments);
-            throw new Error("Each argument for appui.fn.extend must be an object, " + typeof(arguments[i]) + " given");
+            throw new Error("Each argument for appui.fn.extend must be an object");
             return;
           }
           if ( $.isArray(arguments[i]) ){
@@ -1643,15 +1145,13 @@
             return;
           }
           for ( var n in arguments[i] ){
-            if ( (typeof(r[n]) === 'object') &&
+            if ( (r[n] !== undefined) &&
               (typeof(arguments[i][n]) === 'object') &&
-              !$.isFunction(r[n]) &&
-              !$.isArray(r[n]) &&
               !$.isArray(arguments[i][n])
             ){
               appui.fn.extend(r[n], arguments[i][n]);
             }
-            else if (r[n] === undefined){
+            else{
               r[n] = arguments[i][n];
             }
           }
@@ -1803,17 +1303,6 @@
         }
         return r;
       },
-      
-      countProperties: function(obj){
-        if ( (typeof(obj)).toLowerCase() === 'object' ){
-          var i = 0;
-          for ( var n in obj ){
-            i++;
-          }
-          return i;
-        }
-        return false;
-      },
 
       cancel: function(form, e){
       },
@@ -1858,7 +1347,7 @@
         var res = true,
             $f = $(form),
             data = appui.fn.formdata($f),
-            $inputs = $f.find(":input:not(.appui-no)").filter("[name]").filter(function(){
+            $inputs = $f.find("input,select,textarea").filter("[name]").filter(function(){
               return $(this).data("appuiOriginalValue") !== undefined;
             }).each(function(){
               if ( $(this).data("appuiOriginalValue")  != data[$(this).attr("name")] ){
@@ -1868,46 +1357,49 @@
             });
         return res;
       },
-      
-      fieldValue: function(field){
-        var $f = $(field),
-            v;
-        if ( $f.is(":checkbox") ){
-          if ( $f.is(":checked") ){
-            v = $f.val();
-            if ( !v ){
-              v = 1;
-            }
-          }
-          else{
-            v = 0;
-          }
-        }
-        else if ( $f.is(":radio") ){
-          if ( $f.is(":checked") ){
-            v = $f.val();
-          }
-        }
-        else{
-          v = $f.val();
-        }
-        return v;
-      },
 
       formdata: function(form){
         var $f = $(form),
             // inputs with a name
-            $inputs = $f.find(":input").filter("[name]"),
-            num_changes = 0,
+            $inputs = $f.find("input,select,textarea").filter("[name]"),
+            //num_changes = $inputs.length,
             $$,
             res = {},
             n,
             v,
-            forget;
+            forget,
+            has_original = null;
         $inputs.each(function(j){
           $$ = $(this);
-          v = appui.fn.fieldValue(this);
-          if ( (v !== undefined) && !$$.is(":disabled") ){
+          forget = false
+          if ( (this.tagName.toLowerCase() === 'input') &&
+              (this.type === 'checkbox') &&
+              !$$.is(":checked") ){
+            v = "0";
+          }
+          else if ( (this.tagName.toLowerCase() === 'input') &&
+                   (this.type === 'radio') ){
+            if ( $$.is(":checked") ){
+              v = $$.val();
+            }
+            else{
+              forget = 1;
+            }
+          }
+          else{
+            v = $$.val();
+          }
+          if ( has_original === null ){
+            has_original = ($$.data("appuiOriginalValue") !== undefined);
+          }
+          /*
+             if ( has_original ){
+             if ( $$.data("appuiOriginalValue") == v ){
+             num_changes--;
+             }
+             }
+             */
+          if ( !forget && !$$.is(":disabled") ){
             var name = this.name;
             if (
               (name.indexOf("[]") === -1) &&
@@ -1951,27 +1443,6 @@
         });
         // return num_changes ? res : false;
         return res;
-      },
-      
-      formChanges: function(form){
-        var $f = $(form),
-            // inputs with a name
-            $inputs = $f.find(":input[name]:not(.appui-no)"),
-            data = appui.fn.formdata(form),
-            changes = {},
-            v,
-            name;
-        $inputs.each(function(){
-          name = this.name;
-          v = $(this).data("appuiOriginalValue");
-          if ( (v !== undefined) && (data[name] !== undefined) && (data[name] !== v) ){
-            changes[name] = {
-              value: data[name],
-              oldValue: v
-            };
-          }
-        });
-        return changes;
       },
 
       // http://stackoverflow.com/questions/3900701/onclick-go-full-screen
@@ -2041,10 +1512,19 @@
         }
       },
 
-      resize: function(){
-        appui.env.width = appui.env.win.width();
-        appui.env.height = appui.env.win.height();
-        appui.fn.defaultResizeFunction();
+      resize: function(stop){
+        if ( appui.env.resizeTimer ){
+          clearTimeout(appui.env.resizeTimer);
+        }
+        appui.env.width = $window.width();
+        appui.env.height = $window.height();
+        if ( !stop ){
+          appui.env.resizeTimer = setTimeout(function(){
+            appui.env.width = $window.width();
+            appui.env.height = $window.height();
+            appui.fn.defaultResizeFunction();
+          }, 20);
+        }
       },
 
       md5: function(st){
@@ -2122,449 +1602,17 @@
         }
         return false;
       },
-  
-      camelize: function(str) {
-        return str.replace('/^([A-Z])|[\\s-_](\\w)/g', function(match, p1, p2, offset) {
-          if (p2) return p2.toUpperCase();
-          return p1.toLowerCase();
-        });
-      },
-      
-      camelToCss: function(str){
-        return str.replace('/([A-Z])/g', function(st){
-          return '-' + st.toLowerCase();
-        }).replace('/^./', function(st){
-          return st.toLowerCase()
-        });
-      },
-      
-      insertContent: function(content, target){
-        if ( (typeof(target) !== 'object') || !(target instanceof jQuery) ){
-          target = $(target);
-        }
-        target.empty().append(content);
-        appui.fn.analyzeContent(target, true);
-      },
-  
-      cssFullWidth: function(ele){
-        if ( (typeof(ele) !== 'object') || !(ele instanceof jQuery) ){
-          ele = $(ele);
-        }
-        // Resizing the .appui-full-width containers
-        return ele.each(function(i, cont){
-          /** @var jQuery $p */
-          var $p = $(cont),
-              allFW = $(cont).children(".appui-full-width:visible");
-          if ( allFW.length ){
-            if ( $p.css("overflow") === 'auto' ){
-              $p.css("overflow", "hidden");
-            }
-            var $$ = $p.children(".appui-full-width:first"),
-                w = $p.width(),
-                siblings = $$.siblings(),
-                siblingsFW = siblings.filter(".appui-full-width");
-            while ( !w && ($p[0] !== document.body) ){
-              $p = $p.parent();
-              w = $p.width();
-            }
-            if ( w ){
-              var num = allFW.length,
-                  diff = $$.outerWidth(true) - $$.width();
-    
-              // Calculating the space left by the siblings within the container
-              // Excepting the ones with absolute positioning
-    
-              siblings.each(function(){
-                var $t = $(this);
-                if ( !$t.hasClass("appui-full-width") &&
-                  $t.is(":visible") &&
-                  ($t.css('position') !== 'absolute') &&
-                  ($t.css('position') !== 'fixed') &&
-                  ($t.css('display') !== 'inline')
-                ){
-                  var w2 = $t.outerWidth(true);
-                  if ( w2 ){
-                    w -= w2;
-                  }
-                }
-              });
-              if ( diff ){
-                w -= diff;
-              }
-              if ( num && (w > 0) ){
-                if ( num > 1 ){
-                  $.each(siblingsFW, function(){
-                    var $t = $(this);
-                    w -= $t.outerWidth(true) - $t.width();
-                  });
-                }
-                if ( siblingsFW.length ){
-                  siblingsFW.width(w/num);
-                }
-                $$.width(w/num);
-              }
-            }
-          }
-        });
-      },
-  
-      cssFullHeight: function(ele){
-        if ( (typeof(ele) !== 'object') || !(ele instanceof jQuery) ){
-          ele = $(ele);
-        }
-        // Resizing the .appui-full-height containers
-        return ele.each(function(i, cont){
-          /** @var jQuery $p */
-          var $p = $(cont),
-              allFH = $(cont).children(".appui-full-height:visible");
-          if ( allFH.length ){
-            if ( $p.css("overflow") === 'auto' ){
-              $p.css("overflow", "hidden");
-            }
-            var $$ = $p.children(".appui-full-height:visible:first"),
-                h = $p.height(),
-                siblings = $$.siblings(),
-                siblingsFH = siblings.filter(".appui-full-height"),
-                num = allFH.not(".appui-full-width").length;
-            if ( $p[0] === document.body ){
-              h = window.appui ? window.appui.env.height : $(window).height();
-            }
-  
-            // Calculating the space left by the siblings within the container
-            // Excepting the ones with absolute positioning
-  
-            siblings.each(function(){
-              var h2, $t = $(this);
-              if ( !$t.hasClass("appui-full-height") &&
-                $t.is(":visible") &&
-                !$t.hasClass("appui-full-width") &&
-                ($t.css('position') !== 'absolute') &&
-                ($t.css('position') !== 'fixed') &&
-                ($t.css('display') !== 'inline')
-              ){
-                h2 = $t.outerHeight(true);
-                if ( h2 ){
-                  h -= h2;
-                }
-              }
-            });
-            if ( num && (h > 0) ){
-              if ( num > 1 ){
-                $.each(siblingsFH, function(){
-                  var $t = $(this);
-                  h -= $t.outerHeight(true) - $t.height();
-                });
-              }
-              if ( siblingsFH.length ){
-                siblingsFH.height(h/num);
-              }
-              $$.height(h/num);
-            }
-          }
-        });
-      },
-  
-      cssForm: function(ele){
-        if ( (typeof(ele) !== 'object') || !(ele instanceof jQuery) ){
-          ele = $(ele);
-        }
-        // Now taking care of each $fieldParents for resizing form's elements
-        return ele.each(function (i, fpar) {
-          var $fpar = $(fpar),
-              isOverflow = true,
-              // Final width of the labels
-              w = 0,
-              w1,
-              w2,
-              total = 0,
-              $lbl,
-              $hiddenEle,
-              center = false,
-              space = false,
-              // Puts/adds elements with class appui-elem-hidden (so hidden) in the object $hiddenChildren and removes the class to show them
-              $hiddenChildren = $hiddenChildren ?
-                $hiddenChildren.add($fpar.children(".appui-elem-hidden").removeClass("appui-elem-hidden")) : $fpar.children(".appui-elem-hidden").removeClass("appui-elem-hidden"),
-              // Each element with class appui-form-label
-              $lbls = $fpar.children(".appui-form-label");
-          $lbls.each(function () {
-            $lbl = $(this);
-            // Defining appuiIsDone to check if the original width has been picked
-            if (!$lbl.data("appuiIsDone")) {
-              $lbl.data("appuiIsDone", 1);
-              if (parseInt($lbl.get(0).style.width) > 0) {
-                if ( w < parseInt($lbl.get(0).style.width) ) {
-                  w = parseInt($lbl.get(0).style.width);
-                }
-                $lbl.data("appuiOriginalWidth", w);
-              }
-            }
-            // Picking the original width if has been originally defined
-            else if ($lbl.data("appuiOriginalWidth")) {
-              if ( w < $lbl.data("appuiOriginalWidth") ){
-                w = $lbl.data("appuiOriginalWidth");
-              }
-            }
-          });
-          $lbls.each(function () {
-            $lbl = $(this);
-            // checking if a parent is hidden and adds it to $hiddenEle, and shows it
-            if ($lbl.parents(":hidden").length > 0) {
-              $($lbl.parents(":hidden").get().reverse()).each(function () {
-                if (!$(this).is(":visible")) {
-                  $hiddenEle = $hiddenEle ?
-                    $hiddenEle.add($(this).show()) : $(this).show();
-                }
-              });
-            }
-            // space is the total dimension of the paddings and margins of both label and field elements
-            // It is calculated only for the first element
-            if ( !space ){
-              // Corresponding field object for this label
-              var $fld = $lbl.nextUntil(".appui-form-label", ".appui-form-field");
-              space = ( $lbl.outerWidth(true) - $lbl.width() ) + ( $fld.outerWidth(true) - $fld.width() );
-            }
-            // centered elements
-            if ($lbl.hasClass("appui-c")) {
-              center = 1;
-            }
-            // Removing the width to get the "natural" width
-            $lbl.css("width", "auto");
-            // w2 is the natural width, we assign it a minimal width if none is found
-            w2 = $lbl.width() || 20;
-            // If the natural width is larger than the current final width, final width takes its value
-            if (w2 > w) {
-              w = w2;
-            }
-          });
-    
-          if (w > 0) {
-            if ($fpar.children(".appui-form-full:visible:first").length) {
-              total = $fpar.children(".appui-form-full:visible:first").width() - 1;
-            }
-            else {
-              total = false;
-              for (var $par = $fpar; !total; $par = $par.parent()) {
-                total = $par.width();
-                isOverflow = $par.css("overflow") === "auto";
-              }
-            }
-            if ( isOverflow ){
-              total -= 25;
-            }
-      
-            if (total > ( 25 + space )) {
-              total -= space;
-              if (center) {
-                w1 = total/2;
-                w = w1;
-              }
-              else {
-                w1 = total - w;
-              }
-              $fpar.children(".appui-form-label").each(function () {
-                var $l = $(this);
-                $l.width(w);
-                if (center) {
-                  $l.css("text-align", "right");
-                }
-                var $f = $l.nextUntil(".appui-form-label", ".appui-form-field");
-                if ($f.length === 0) {
-                  $f = $l.nextAll("a:first").find(".appui-form-field");
-                }
-                if ($f.length) {
-                  $l.css("minHeight", $f.height());
-                  $f.each(function () {
-                    var $$ = $(this),
-                        t = $f.prop("tagName");
-                    if (t.toLowerCase() === 'div' || t.toLowerCase() === 'textarea') {
-                      $$.css("width", w1 + "px");
-                    }
-                    else {
-                      $$.css("max-width", w1 + "px");
-                    }
-                  });
-                }
-                else{
-                  $l.css("minHeight", null);
-                }
-              });
-            }
-            if ($hiddenChildren) {
-              $hiddenChildren.addClass("appui-elem-hidden");
-            }
-          }
-          if ($hiddenEle) {
-            $hiddenEle.hide();
-            $hiddenEle = false;
-          }
-        });
-      },
-      
-      cssMason: function(ele){
-        if ( $.isFunction($.fn.masonry) ){
-          if ( (typeof(ele) !== 'object') || !(ele instanceof jQuery) ){
-            ele = $(ele);
-          }
-          return ele.each(function(){
-            var $ele = $(this),
-                actualWidth = $ele.width(),
-                $widgets = $ele.children(".appui-widget:visible:not(.appui-widget_full)");
-            if ( $widgets.length ){
-              var w;
-              if ( actualWidth < 800 ) {
-                w = "99.5%";
-              }
-              else if ( actualWidth < 1150 ) {
-                w = "49.5%";
-              }
-              else if ( actualWidth < 1550 ) {
-                w = "32.8%";
-              }
-              else {
-                w = "24.5%";
-              }
-              $widgets.css({width: w});
-              $ele.masonry({
-                itemSelector: '.appui-widget',
-                transitionDuration: 0,
-                isInitLayout: true
-              });
-            }
-          })
-        }
-      },
-      
-      setInitialValues: function(ele, force){
-        // Keeping the original values in a data attached to the element
-        $(":input[name]:not(.appui-no)", ele).each(function(){
-          var $$ = $(this),
-              v;
-          if ( force || ($$.data("appuiOriginalValue") === undefined) ){
-            v = appui.fn.fieldValue(this);
-            if ( v !== undefined ){
-              $$.data("appuiOriginalValue", v === undefined ? "" : v);
-            }
-          }
-        });
-      },
-  
-      analyzeContent: function(ele, force){
-        if ( !ele ){
-          ele = $(document.body);
-        }
-        else if ( (typeof(ele) !== 'object') || !(ele instanceof jQuery) ){
-          ele = $(ele);
-        }
-        return ele.each(function(){
-          var ele = this,
-              $ele = $(ele),
-              nodes = [];
-          if ( force ){
-            $ele
-              .add($ele.find(".appui-sensor"))
-              .filter(".appui-sensor")
-              .each(function(){
-                var $$ = $(this);
-                $$.unbind("resize")
-                  .removeClass("appui-sensor")
-                  .removeData("appuiFullHeight appuiFullWidth appuiForm appuiMasonry");
-              });
-          }
-          
-          
-          // In case we have data bindings we leave a bit of time before setting initial values
-          setTimeout(function(){
-            appui.fn.setInitialValues(ele);
-            $ele.find(".k-grid:not(.appui-sensor)")
-              .addClass("appui-sensor")
-              .data("appuiFullHeight", 1);
-          }, 200);
-  
-          $ele
-            .add($(".appui-full-width", ele))
-            .filter(".appui-full-width")
-            .not(".appui-sensor > .appui-full-width")
-            .each(function(){
-              $(this.parentNode).data("appuiFullWidth", 1);
-              if ( $.inArray(this.parentNode, nodes) === -1 ){
-                nodes.push(this.parentNode);
-              }
-            });
-  
-          $ele
-            .add($(".appui-full-height", ele))
-            .filter(".appui-full-height")
-            .not(".appui-sensor > .appui-full-height")
-            .each(function(){
-              $(this.parentNode).data("appuiFullHeight", 1);
-              if ( $.inArray(this.parentNode, nodes) === -1 ){
-                nodes.push(this.parentNode);
-              }
-            });
-  
-          $ele
-            .find(".appui-form-label")
-            .not(".appui-sensor > .appui-form-label")
-            .each(function(){
-              $(this.parentNode).data("appuiForm", 1);
-              if ( $.inArray(this.parentNode, nodes) === -1 ){
-                nodes.push(this.parentNode);
-              }
-            });
-  
-          $ele
-            .add($(".appui-masonry", ele))
-            .filter(".appui-masonry")
-            .not(".appui-sensor > .appui-masonry")
-            .each(function(){
-              $(this).data("appuiMasonry", 1);
-              if ( $.inArray(this, nodes) === -1 ){
-                nodes.push(this);
-              }
-            });
-  
-          $.each(nodes, function(i, o){
-            var $o = $(o);
-            if ( !$o.hasClass("appui-sensor") ){
-              $o.addClass("appui-sensor").resize(function(){
-                appui.fn.redraw($o);
-              });
-            }
-            appui.fn.redraw($o);
-          });
-        });
-      },
-      
-      redraw: function(eles, all){
-        if ( !eles ){
-          eles = $(".appui-sensor:visible");
-        }
-        else if ( all ){
-          eles = eles.add(eles.find(".appui-sensor:visible")).filter(".appui-sensor:visible");
-        }
-        eles.filter(":visible").each(function(i, ele){
-          var $ele = $(ele);
-          if ( $ele.data("appuiFullWidth") ){
-            appui.fn.cssFullWidth($ele)
-          }
-          if ( $ele.data("appuiFullHeight") ){
-            appui.fn.cssFullHeight($ele)
-          }
-          if ( $ele.data("appuiMasonry") ){
-            appui.fn.cssMason($ele)
-          }
-          if ( $ele.data("appuiForm") ){
-            appui.fn.cssForm($ele)
-          }
-        });
+
+      merge: function(){
+
       },
 
       /* Onload functions: keep the var screen width and height up-to-date and binds history if enabled */
       init: function(cfg){
         var o, p, parts;
         if ( appui && !appui.env.isInit ){
-          appui.env.width = appui.env.win.width();
-          appui.env.height = appui.env.win.height();
+          appui.env.width = $window.width();
+          appui.env.height = $window.height();
           appui.env.root = $("head base").length > 0 ? $("head base").attr("href") : appui.env.host;
           /* The server's path (difference between the host and the current dir */
           appui.env.path = appui.env.url.substr(appui.env.root.length);
@@ -2590,11 +1638,13 @@
             appui.fn.submit(this, e);
           }).keyup(function(e){
             if ( (e.key === 'Esc') || (e.key === 'Escape') ){
-              appui.fn.closePopup();
+              appui.fn.closeAlert();
             }
           });
 
-          window.onresize = appui.fn.resize;
+          $window.resize(function() {
+            appui.fn.resize();
+          });
 
           if (appui.fn.history) {
             appui.fn.history.clearAllIntervals();
@@ -2621,9 +1671,31 @@
         if ( window.kendo !== undefined ) {
 
           var kendo = window.kendo,
-              ui = kendo.ui;
+            ui = kendo.ui,
+            fn;
 
-          kendo.ui.DropDownList.prototype.options.autoWidth = true;
+          fn = kendo.ui.DropDownList.prototype.open;
+          kendo.ui.DropDownList.prototype.open = function () {
+            var res = fn.apply(this, arguments);
+            var w = this.list.width();
+            this.list.width("auto");
+            var w2 = this.list.width();
+            if (w2 < w) {
+              this.list.width(w);
+            }
+            return res;
+          };
+          fn = kendo.ui.ComboBox.prototype.open;
+          kendo.ui.ComboBox.prototype.open = function () {
+            var res = fn.apply(this, arguments);
+            var w = this.list.width();
+            this.list.width("auto");
+            var w2 = this.list.width();
+            if (w2 < w) {
+              this.list.width(w);
+            }
+            return res;
+          };
 
           var dropDownTreeView = ui.Widget.extend({
             _uid: null,

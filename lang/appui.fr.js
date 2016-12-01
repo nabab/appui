@@ -15,5 +15,7 @@ $.extend(appui.lng, {
   unpin: "Decrocher",
   yes: "Oui",
   no: "Non",
-  untitled: "Sans titre"
+  fullscreen: 'Plein écran',
+  untitled: "Sans titre",
+  cancel: "Annuler"
 });

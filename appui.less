@@ -1,10 +1,33 @@
+@charset "UTF-8";
 @black: #454545;
 @orange: #FF9900;
-@red: #FFF0F0;
-@green: #F0FFF0;
-@blue: #F0FFFF;
-@yellow: #FFFFCC;
+@red: #DB3340;
+@green: #00A03E;
+@blue: #6E9ECF;
+@yellow: #FDF200;
 @white: #FDFDFD;
+@purple: #A333C8;
+@grey: #ADC4CC;
+@brown: #8C6954;
+@olive: #92B06A;
+@pink: #EB65A0;
+@turquoise: #1FDA9A;
+@cyan: #00C8F8;
+@navy: #354458;
+@darkgrey: #5A6A62;
+
+html{
+  width: 100%;
+  height: 100%;
+}
+body{
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+}
 a{
   outline-style: none;
   text-decoration: none;
@@ -52,6 +75,7 @@ table td{
 .appui-h-100{
   height: 100%;
   box-sizing: border-box !important;
+  overflow: auto;
 }
 .appui-h-75{
   height: 75%;
@@ -440,11 +464,8 @@ input.appui-form-label{
 .appui-black{
   color: @black;
 }
-.appui-white{
-  color: @white;
-}
-.appui-blue{
-  color: darken(@blue, 60%);
+.appui-orange{
+  color: @orange;
 }
 .appui-red{
   color: @red;
@@ -452,40 +473,126 @@ input.appui-form-label{
 .appui-green{
   color: @green;
 }
-.appui-orange{
-  color: @orange;
+.appui-blue{
+  color: @blue;
 }
 .appui-yellow{
   color: @yellow;
 }
-
+.appui-white{
+  color: @white;
+}
+.appui-purple{
+  color: @purple;
+}
+.appui-grey{
+  color: @grey;
+}
+.appui-brown{
+  color: @brown;
+}
+.appui-olive{
+  color: @olive;
+}
+.appui-pink{
+  color: @pink;
+}
+.appui-turquoise{
+  color: @turquoise;
+}
+.appui-cyan{
+  color: @cyan;
+}
+.appui-navy{
+  color: @navy;
+}
+.appui-darkgrey{
+  color: @darkgrey;
+}
 .appui-bg-black{
   background-color: @black;
   color: @white;
+}
+.appui-bg-orange{
+  background-color: @orange;
+  color: @white;
+}
+.appui-bg-red{
+  background-color: @red;
+  color: @white;
+}
+.appui-bg-green{
+  background-color: @green;
+  color: @white;
+}
+.appui-bg-blue{
+  background-color: @blue;
+  color: @white;
+}
+.appui-bg-yellow{
+  background-color: @yellow;
+  color: @black;
 }
 .appui-bg-white{
   background-color: @white;
   color: @black;
 }
-.appui-bg-blue{
-  background-color: darken(@blue, 60%);
+.appui-bg-purple{
+  background-color: @purple;
   color: @white;
 }
-.appui-bg-red{
-  background-color: darken(@red, 60%);
+.appui-bg-grey{
+  background-color: @grey;
+  color: @black;
+}
+.appui-bg-brown{
+  background-color: @brown;
   color: @white;
 }
-.appui-bg-green{
-  background-color: darken(@green, 60%);
+.appui-bg-olive{
+  background-color: @olive;
   color: @white;
 }
-.appui-bg-orange{
-  background-color: darken(@orange, 60%);
+.appui-bg-pink{
+  background-color: @pink;
   color: @white;
 }
-.appui-bg-yellow{
-  background-color: darken(@yellow, 60%);
+.appui-bg-turquoise{
+  background-color: @turquoise;
+  color: @black;
+}
+.appui-bg-cyan{
+  background-color: @cyan;
+  color: @black;
+}
+.appui-bg-navy{
+  background-color: @navy;
   color: @white;
+}
+.appui-bg-darkgrey{
+  background-color: @darkgrey;
+  color: @white;
+}
+.appui-stats{
+  .appui-form-full;
+  align-items: center;
+  flex-direction: row;
+  div{
+    display: inline-block;
+    text-transform: uppercase;
+    text-align: center;
+    box-sizing: content-box;
+  }
+  .label{
+    margin: 0 0 0 0.75em;
+    font-size: 1em;
+  }
+  .value{
+    display: inline-block;
+    font-size: 2rem;
+    font-weight: normal;
+    line-height: 1em;
+  }
 }
 div.appui-h-100.k-grid{
   border-width: 0;
@@ -493,6 +600,16 @@ div.appui-h-100.k-grid{
 div.appui-widget{
   word-wrap: break-word;
   margin: 0.25%;
+  div.appui-widget-zoom{
+    position: absolute;
+    bottom: 0px;
+    right: 2px;
+    cursor: pointer;
+    opacity: 0.5;
+  }
+  div.appui-widget-zoom:hover {
+    opacity: 1;
+  }
   ul, li{
     margin: 0;
     padding: 0;
@@ -523,6 +640,11 @@ div.appui-widget{
   div.k-header{
     text-align: center;
     margin-bottom: 2px;
+    h4{
+      cursor: move;
+      padding: 0;
+      margin: 0 3em;
+    }
     i.fa{
       font-size: large;
       cursor: pointer;
@@ -530,11 +652,8 @@ div.appui-widget{
     i.appui-widget-button{
       position: absolute;
       top: 3px;
-      &.fa-chevron-up, &.fa-chevron-down{
+      &.fa-times{
         left: 5px;
-      }
-      &.fa-cog{
-        right: 5px;
       }
     }
     div{
@@ -553,4 +672,7 @@ div.appui-widget{
       clear: left;
     }
   }
+}
+.k-splitter{
+  height: inherit !important;
 }

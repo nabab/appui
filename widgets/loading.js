@@ -7,7 +7,7 @@
 
   appui.app.loading = function(id, url){
     // The notification widget DOM element
-    var ele = $("#appui_notification"),
+    var ele = $("#appui_loading"),
     // The notification widget
         widget = false,
 
@@ -54,7 +54,7 @@
 
         _init = function(show){
           if ( !ele.length ){
-            ele = $('<div id="appui_notification"></div>').appendTo(document.body);
+            ele = $('<div id="appui_loading"></div>').appendTo(document.body);
             ele.kendoNotification({
               autoHideAfter: 0,
               hide: function(e){
