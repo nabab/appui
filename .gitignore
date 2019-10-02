@@ -6,3 +6,7 @@
 .idea
 *.iml
 *.bak
+
+[core]
+filemode = false
+*.* text eol=lf
